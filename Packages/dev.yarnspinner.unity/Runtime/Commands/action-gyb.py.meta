@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: e1b7988914af942c8b524809f9eff521
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/Runtime/Commands/action-gyb.py
+  uploadId: 766632

@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c408d9f6c70b249b4857bf8cae5b025f
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/LICENSE.md
+  uploadId: 766632

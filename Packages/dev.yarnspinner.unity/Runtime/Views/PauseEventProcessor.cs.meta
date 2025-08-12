@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 027fadfcefed14f5c9cc781a2bb7e12a
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/Runtime/Views/PauseEventProcessor.cs
+  uploadId: 766632

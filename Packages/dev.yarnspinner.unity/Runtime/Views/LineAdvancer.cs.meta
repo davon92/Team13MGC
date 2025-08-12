@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 61503eb6a998a4af68e0dcbec4aad8cb
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/Runtime/Views/LineAdvancer.cs
+  uploadId: 766632

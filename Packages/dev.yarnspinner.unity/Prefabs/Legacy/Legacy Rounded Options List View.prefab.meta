@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 5803e1d7bdc0b42d88017d33800d2635
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/Prefabs/Legacy/Legacy Rounded Options
+    List View.prefab
+  uploadId: 766632

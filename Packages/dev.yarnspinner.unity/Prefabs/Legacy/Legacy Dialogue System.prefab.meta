@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 7f29e5f7ffdea4a6793cefb278b61f0c
+PrefabImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/Prefabs/Legacy/Legacy Dialogue System.prefab
+  uploadId: 766632

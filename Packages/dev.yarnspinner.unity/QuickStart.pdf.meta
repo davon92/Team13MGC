@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 020db8113603b4f3b8143cd37a544800
+DefaultImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/QuickStart.pdf
+  uploadId: 766632

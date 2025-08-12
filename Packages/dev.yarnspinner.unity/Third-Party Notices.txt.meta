@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 51c49a04ee1d444c384209157719e5b9
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 267061
+  packageName: Yarn Spinner for Unity, the friendly dialogue and narrative tool
+  packageVersion: 3.0.3
+  assetPath: Packages/dev.yarnspinner.unity/Third-Party Notices.txt
+  uploadId: 766632
