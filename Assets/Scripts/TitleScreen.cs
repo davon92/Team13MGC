@@ -52,13 +52,13 @@ public class TitleScreen : MonoBehaviour, IUIScreen
     private void OnStory()
     {
         // Go to your VN/Story entry screen (another panel in Menus)
-        if (screens) screens.Show(MenuIds.StoryMenu);
+        if (screens) screens.Push(MenuIds.StoryMenu);
     }
 
     private void OnFreePlay()
     {
         // Go to Song Select panel (another panel in Menus)
-        if (screens) screens.Show(MenuIds.SongSelect);
+        if (screens) screens.Push(MenuIds.SongSelect);
     }
 
     private void OnSettings()
