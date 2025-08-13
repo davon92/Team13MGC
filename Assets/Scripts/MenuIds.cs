@@ -6,4 +6,5 @@ public static class MenuIds
     public const string Gallery    = "Gallery";
     public const string Credits    = "Credits";
     public const string StoryMenu  = "StoryMenu";  // e.g., VN entry screen
+    public const string SaveLoad  = "SaveLoad"; // load screen id
 }
