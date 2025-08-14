@@ -77,12 +77,16 @@ public class TitleScreen : MonoBehaviour, IUIScreen
         if (screens) screens.Push(MenuIds.Credits);
     }
 
-    private void OnQuit()
+    private async void OnQuit()
     {
+        bool ok = await ModalHub.I.Confirm.ShowAsync("Are you sure you want to quit?");
+        if (ok)
+        {
 #if UNITY_EDITOR
-        UnityEditor.EditorApplication.isPlaying = false;
+            UnityEditor.EditorApplication.isPlaying = false;
 #else
         Application.Quit();
 #endif
+        }
     }
 }

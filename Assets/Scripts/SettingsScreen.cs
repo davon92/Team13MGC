@@ -9,6 +9,7 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
 {
     
     private GraphicsSettings candidateGraphics;          // what we’re previewing
+    private GraphicsSettings beforeGraphics;
     private static GraphicsSettings Clone(GraphicsSettings g) => new GraphicsSettings {
         width = g.width, height = g.height, refreshRate = g.refreshRate,
         windowMode = g.windowMode, qualityIndex = g.qualityIndex, vSync = g.vSync
@@ -54,22 +55,14 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
     [Header("Audio")]
     [SerializeField] private Slider masterVolume;
 
-    // ---- Confirm modal for graphics
-    [Header("Confirm Modal (Graphics)")]
-    [SerializeField] private GameObject confirmRoot;        // small panel "Keep these settings?"
-    [SerializeField] private TMP_Text   confirmCountdownLabel;
-    [SerializeField] private Button     confirmYesButton;
-    [SerializeField] private Button     confirmNoButton;
-    [SerializeField] private float      confirmSeconds = 10f;
-
     // Back button (optional)
     [SerializeField] private Button backButton;
+    
+
 
     // Resolution list helper
     private struct Res { public int w,h,rr; public override string ToString()=> $"{w} x {h} @{rr}Hz"; }
     private List<Res> resolutions = new();
-    private GraphicsSettings pendingGraphicsBeforeConfirm; // to revert
-    private Coroutine confirmCo;
 
     // ---------- Lifecycle ----------
     void Awake()
@@ -79,8 +72,6 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
         tabGameplay?.onClick.AddListener(() => ShowTab(Tab.Gameplay));
         tabGraphics?.onClick.AddListener(() => ShowTab(Tab.Graphics));
         tabAudio?.onClick.AddListener(() => ShowTab(Tab.Audio));
-        confirmYesButton?.onClick.AddListener(OnConfirmYes);
-        confirmNoButton ?.onClick.AddListener(OnConfirmNo);
         backButton?.onClick.AddListener(OnBack);
 
         // Gameplay hooks
@@ -151,20 +142,11 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
         ShowTab(Tab.Gameplay); // first tab
     }
 
-    public void OnHide()
-    {
-        if (confirmCo != null) StopCoroutine(confirmCo);
-        confirmCo = null;
-        if (confirmRoot) confirmRoot.SetActive(false);
-    }
+    public void OnHide() { }
 
     public void OnCancel(BaseEventData eventData) => OnBack();
 
-    public void OnBack()
-    {
-        if (confirmRoot && confirmRoot.activeSelf) { OnConfirmNo(); return; }
-        screens?.Pop();
-    }
+    public void OnBack() => screens?.Pop();
 
     // ---------- Tabs ----------
     private void ShowTab(Tab t)
@@ -279,9 +261,9 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
         if (vsyncToggle)     vsyncToggle.SetIsOnWithoutNotify(SettingsService.Graphics.vSync);
     }
 
-    public void ApplyGraphicsWithConfirm()
+    public async void ApplyGraphicsWithConfirm()
     {
-        // Read UI → candidate settings
+        // Build candidate 'g' from dropdowns/toggles (same logic you had)
         var g = new GraphicsSettings
         {
             width  = SettingsService.Graphics.width,
@@ -309,61 +291,24 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
         if (qualityDropdown) g.qualityIndex = qualityDropdown.value;
         if (vsyncToggle)     g.vSync        = vsyncToggle.isOn;
 
-        // Save "before" as a deep copy so we can revert safely
-        pendingGraphicsBeforeConfirm = Clone(SettingsService.Graphics);
-
-        // Preview candidate (do NOT assign to SettingsService.Graphics yet)
+        beforeGraphics    = Clone(SettingsService.Graphics);
         candidateGraphics = g;
+
+        // Preview immediately
         SettingsService.ApplyGraphics(candidateGraphics);
 
-        // Open confirm modal
-        if (confirmCo != null) StopCoroutine(confirmCo);
-        if (confirmRoot) confirmRoot.SetActive(true);
-        confirmCo = StartCoroutine(CoConfirmGraphics());
+        // Ask the user (timeout defaults to "No/revert")
+        bool keep = await ModalHub.I.Confirm.ShowAsync("Keep these settings?", 10f, false);
 
-        // Put focus on Yes for pad users
-        if (confirmYesButton)
-            EventSystem.current.SetSelectedGameObject(confirmYesButton.gameObject);
-    }
-
-    private IEnumerator CoConfirmGraphics()
-    {
-        float t = confirmSeconds;
-        while (t > 0f)
+        if (keep)
         {
-            if (confirmCountdownLabel) confirmCountdownLabel.text = $"Keep these settings? ({Mathf.CeilToInt(t)}s)";
-            t -= Time.unscaledDeltaTime;
-            yield return null;
+            SettingsService.Graphics = Clone(candidateGraphics);
+            SettingsService.Save();
         }
-        // Timeout = revert
-        RevertGraphics();
-    }
-
-    public void OnConfirmYes()
-    {
-        if (confirmCo != null) StopCoroutine(confirmCo);
-        confirmCo = null;
-        if (confirmRoot) confirmRoot.SetActive(false);
-
-        // Commit the candidate and save
-        SettingsService.Graphics = Clone(candidateGraphics);
-        SettingsService.Save();
-    }
-
-    public void OnConfirmNo() => RevertGraphics();
-
-    private void RevertGraphics()
-    {
-        if (confirmCo != null) StopCoroutine(confirmCo);
-        confirmCo = null;
-        if (confirmRoot) confirmRoot.SetActive(false);
-
-        // Revert to the saved "before" values (no save, we didn’t change them)
-        SettingsService.ApplyGraphics(pendingGraphicsBeforeConfirm);
-        RefreshGraphicsUI();
-
-        // Return focus to Apply button for convenience
-        if (applyGraphicsButton)
-            EventSystem.current.SetSelectedGameObject(applyGraphicsButton.gameObject);
+        else
+        {
+            SettingsService.ApplyGraphics(beforeGraphics);
+            RefreshGraphicsUI();
+        }
     }
 }
