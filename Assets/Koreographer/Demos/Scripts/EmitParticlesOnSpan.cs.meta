@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 8a3a1996661c641b7b47fa9e4f702baa
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 44270
+  packageName: Koreographer Professional Edition
+  packageVersion: 1.6.3
+  assetPath: Assets/Koreographer/Demos/Scripts/EmitParticlesOnSpan.cs
+  uploadId: 666913

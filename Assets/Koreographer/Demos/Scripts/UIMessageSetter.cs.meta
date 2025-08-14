@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 45cece090ee164d35957bb52f327c6b0
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 44270
+  packageName: Koreographer Professional Edition
+  packageVersion: 1.6.3
+  assetPath: Assets/Koreographer/Demos/Scripts/UIMessageSetter.cs
+  uploadId: 666913

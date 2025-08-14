@@ -1,0 +1,29 @@
+fileFormatVersion: 2
+guid: 13948c47d6a9d416cba9767f98b167fc
+PluginImporter:
+  serializedVersion: 1
+  iconMap: {}
+  executionOrder: {}
+  isPreloaded: 0
+  platformData:
+    Any:
+      enabled: 1
+      settings: {}
+    Editor:
+      enabled: 0
+      settings:
+        DefaultValueInitialized: true
+    WindowsStoreApps:
+      enabled: 0
+      settings:
+        CPU: AnyCPU
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 44270
+  packageName: Koreographer Professional Edition
+  packageVersion: 1.6.3
+  assetPath: Assets/Plugins/Koreographer/SonicBloom.MIDI.dll
+  uploadId: 666913

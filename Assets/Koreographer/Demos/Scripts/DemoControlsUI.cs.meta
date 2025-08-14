@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 55edcf8f75b6f4ec6b4fcac0a59c5aba
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 44270
+  packageName: Koreographer Professional Edition
+  packageVersion: 1.6.3
+  assetPath: Assets/Koreographer/Demos/Scripts/DemoControlsUI.cs
+  uploadId: 666913

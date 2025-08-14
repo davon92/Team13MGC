@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: d257563c0031942fb8d79e342561735d
+MonoImporter:
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 44270
+  packageName: Koreographer Professional Edition
+  packageVersion: 1.6.3
+  assetPath: Assets/Koreographer/Demos/Scripts/ColorAdjuster.cs
+  uploadId: 666913
