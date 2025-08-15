@@ -8804,7 +8804,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8828856994221757884}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -8866,8 +8866,6 @@ MonoBehaviour:
   vsyncToggle: {fileID: 4879881922878043114}
   applyGraphicsButton: {fileID: 2510880772078390682}
   masterVolume: {fileID: 3926085115146554278}
-  confirmModal: {fileID: 0}
-  confirmSeconds: 10
   backButton: {fileID: 7869755623083304734}
 --- !u!1 &8843053718877753189
 GameObject:

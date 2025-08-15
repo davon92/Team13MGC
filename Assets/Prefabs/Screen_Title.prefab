@@ -452,7 +452,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 163.8751, y: 2.93}
+  m_SizeDelta: {x: 163.44, y: 2.93}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &4493507185137825661
 CanvasRenderer:
@@ -935,7 +935,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 122.9329, y: 2.93}
+  m_SizeDelta: {x: 124.1, y: 2.93}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &4667026511196840914
 CanvasRenderer:
@@ -1520,7 +1520,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 134.9692, y: 2.93}
+  m_SizeDelta: {x: 140.53, y: 2.93}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &6615271897624871149
 CanvasRenderer:
@@ -1885,7 +1885,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 98.2696, y: 2.93}
+  m_SizeDelta: {x: 97.31, y: 2.93}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &4363842241183711896
 CanvasRenderer:
@@ -1960,7 +1960,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 122.1649, y: 2.93}
+  m_SizeDelta: {x: 122.87, y: 2.93}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &3357271595177438011
 CanvasRenderer:
@@ -2010,6 +2010,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1712785196438918399}
   - component: {fileID: 8169125035160313273}
+  - component: {fileID: 5287961665993459136}
   m_Layer: 0
   m_Name: Screen_Title
   m_TagString: Untagged
@@ -2060,6 +2061,18 @@ MonoBehaviour:
   galleryButton: {fileID: 2865389789044356518}
   creditsButton: {fileID: 757907182453210075}
   quitButton: {fileID: 6970143895146771264}
+--- !u!225 &5287961665993459136
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5801616628791885372}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &5868821672880008904
 GameObject:
   m_ObjectHideFlags: 0
@@ -2299,7 +2312,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 75.3709, y: 2.93}
+  m_SizeDelta: {x: 73.55, y: 2.93}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!222 &1649540217555029985
 CanvasRenderer:

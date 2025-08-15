@@ -9,6 +9,15 @@ public class RhythmConductor : MonoBehaviour {
     [Header("Timing Offsets (ms)")]
     [SerializeField] int inputOffsetMs = 0;   // compensate controller/audio latency
     [SerializeField] int visualOffsetMs = 0;  // nudge visuals if they feel ahead/behind
+    
+    [SerializeField] int bpm = 120;
+    public int Bpm => bpm;
+
+// used by the knob path renderer for culling
+    public int SamplesPerBeat => Mathf.RoundToInt(SampleRate * 60f / Mathf.Max(1, bpm));
+
+// alias for visuals (ribbon scrolls with the same latency nudge as the grid)
+    public int SampleTime => NowForVisual;
 
     public int InputOffsetMs { get => inputOffsetMs; set => inputOffsetMs = value; }
     public int VisualOffsetMs { get => visualOffsetMs; set => visualOffsetMs = value; }
