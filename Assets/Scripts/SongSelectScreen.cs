@@ -40,6 +40,12 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     [SerializeField] RadarGraph radar;
     [SerializeField] AudioSource preview;
 
+    [Header("Preview Timing")]
+    [SerializeField, Tooltip("Delay before starting a new preview after selection stops moving.")]
+    float previewDelay = 0.25f;
+    [SerializeField, Tooltip("Fade-in duration for the preview volume.")]
+    float previewFadeIn = 0.12f;
+
     [Header("List")]
     [SerializeField] RectTransform listRoot;
     [SerializeField] SongTileView tilePrefab;
@@ -59,6 +65,11 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     // Track which tile is currently focused while the list is tweening.
     // We toggle only when this changes to avoid multiple tiles animating.
     SongTileView _tweenFocused;
+
+    // ───────── preview debounce state ─────────
+    int _previewTicket;                 // cancels pending coroutines on change
+    Coroutine _previewDelayCR;
+    Coroutine _previewLoopCR;
     
 
     // ───────────────────────── internals ─────────────────────────
@@ -78,23 +89,25 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     {
         if (root == null) root = gameObject;
         if (backButton) backButton.onClick.AddListener(OnBack);
+
+        if (preview) preview.playOnAwake = false;
     }
 
     public void OnShow(object args)
     {
-        // keep focus predictable when ScreenController shows this screen
         if (FirstSelected) EventSystem.current.SetSelectedGameObject(FirstSelected);
-
-        // it’s fine if these also run in OnEnable the first time; calling here ensures
-        // a clean refresh when returning to this screen via Pop/Push
-        UpdateLeftPanel();
+        UpdateLeftPanel();      // updates art/text
         ApplyFocusTween();
+
+        // schedule the initial preview with a short delay (feels nicer)
+        SchedulePreview(Current);
     }
 
     public void OnHide()
     {
-        // lightweight cleanup
+        CancelPreview();
         if (preview) preview.Stop();
+
         moveTween?.Kill();
         busy = false;
         repeatDir = 0;
@@ -108,6 +121,8 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         UpdateLeftPanel();
         FocusCenterTile();
         ApplyFocusTween();
+
+        SchedulePreview(Current);
     }
 
     // Build or rebuild the ring of tiles and bind data around currentSong
@@ -144,9 +159,6 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         RebindAll();
         _tweenFocused = null; // reset any in-flight focus tracking
     }
-
-
-
 
     // Bind ring contents: center = currentSong, others wrap around DB
     void RebindAll()
@@ -234,6 +246,9 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     {
         if (busy || dir == 0) return;
 
+        // as soon as we start moving, cancel any pending/playing preview
+        CancelPreview();
+
         busy = true;
         _tweenFocused = null; 
         moveTween?.Kill();
@@ -263,6 +278,9 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
                 FocusCenterTile();
 
                 busy = false;
+
+                // schedule preview for the newly selected tile (debounced)
+                SchedulePreview(Current);
 
                 // drain queued steps for held input
                 if (queuedSteps > 0 && repeatDir != 0)
@@ -305,7 +323,7 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         for (int i = 0; i < tiles.Count; i++)
         {
             bool isCenter = (tiles[i] == under);
-            tiles[i].SetFocused(isCenter, instant: true);   // <- instant snap, no tween here
+            tiles[i].SetFocused(isCenter, instant: true);   // instant snap, no extra tween
         }
     }
 
@@ -376,7 +394,8 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         transitioning = true;
 
         // stop preview & swallow inputs
-        if (preview) preview.Stop();
+        CancelPreview();
+
         moveTween?.Kill();
         busy = false;
         repeatDir = 0;
@@ -409,7 +428,7 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     public void OnBack()
     {
         if (transitioning) return;
-        if (preview) preview.Stop();
+        CancelPreview();
         screens?.Pop();
     }
 
@@ -421,11 +440,86 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
 
         if (bigJacket) bigJacket.sprite = s.jacket;
         if (bpmText)   bpmText.text    = $"BPM {s.bpm}";
-        if (radar)     radar.SetValues(s.stream, s.voltage, s.freeze, s.chaos, s.air);   // RadarGraph API
+        if (radar)     radar.SetValues(s.stream, s.voltage, s.freeze, s.chaos, s.air);
+    }
+
+    // ───────── preview control (debounced + loop + fade-in) ─────────
+    void SchedulePreview(SongInfo s)
+    {
+        if (!preview) return;
+
+        // cancel previous schedule/loop and stop sound
+        CancelPreview();
+
+        // no clip? nothing to do
+        if (s == null || s.previewClip == null) return;
+
+        _previewDelayCR = StartCoroutine(CoPreviewAfterDelay(s, ++_previewTicket));
+    }
+
+    System.Collections.IEnumerator CoPreviewAfterDelay(SongInfo s, int ticket)
+    {
+        // small delay to avoid blasting while scrolling quickly
+        float t = 0f;
+        while (t < previewDelay)
+        {
+            if (ticket != _previewTicket) yield break; // canceled/replaced
+            t += Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (ticket != _previewTicket) yield break;
+        if (!preview) yield break;
+
+        // set up and play quietly, then fade in
+        preview.clip   = s.previewClip;
+        preview.time   = Mathf.Max(0f, s.previewStart);
+        preview.volume = 0f;
+        preview.Play();
+
+        // start loop watcher
+        _previewLoopCR = StartCoroutine(CoPreviewLoop(s, ticket));
+
+        // fade in
+        float dur = Mathf.Max(0f, previewFadeIn);
+        float v = 0f;
+        while (v < 1f && dur > 0f)
+        {
+            if (ticket != _previewTicket) yield break;
+            v += Time.unscaledDeltaTime / dur;
+            preview.volume = Mathf.Clamp01(v);
+            yield return null;
+        }
+        preview.volume = 1f;
+    }
+
+    System.Collections.IEnumerator CoPreviewLoop(SongInfo s, int ticket)
+    {
+        // Loop between previewStart/previewEnd (or to previewLoop) if provided
+        while (preview && preview.isPlaying && ticket == _previewTicket)
+        {
+            if (s.previewEnd > 0f && preview.time >= s.previewEnd)
+            {
+                float loopPoint = (s.previewLoop >= 0f ? s.previewLoop : s.previewStart);
+                preview.time = Mathf.Max(0f, loopPoint);
+            }
+            yield return null;
+        }
+    }
+
+    void CancelPreview()
+    {
+        // invalidate tickets so any pending coroutines exit
+        _previewTicket++;
+
+        if (_previewDelayCR != null) StopCoroutine(_previewDelayCR);
+        if (_previewLoopCR  != null) StopCoroutine(_previewLoopCR);
+        _previewDelayCR = _previewLoopCR = null;
+
         if (preview)
         {
-            preview.clip = s.previewClip;
-            preview.Play();
+            preview.Stop();
+            preview.volume = 1f; // reset for next start
         }
     }
 }
