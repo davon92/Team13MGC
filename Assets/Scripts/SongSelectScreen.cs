@@ -277,28 +277,19 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     // During tween: weight only the tile closest to the selector
     void UpdateFocusDynamic()
     {
-        if (selector == null) { ResetFocusInstant(); return; }
+        if (!selector) { ResetFocusInstant(); return; }
 
-        // Find the single tile closest to the selector’s center
         float selY = selector.TransformPoint(selector.rect.center).y;
-
-        SongTileView best = null;
-        float bestDist = float.MaxValue;
 
         for (int i = 0; i < tiles.Count; i++)
         {
-            var rt = (RectTransform)tiles[i].transform;
+            var  rt = (RectTransform)tiles[i].transform;
             float y = rt.TransformPoint(rt.rect.center).y;
             float d = Mathf.Abs(y - selY);
-            if (d < bestDist) { bestDist = d; best = tiles[i]; }
-        }
 
-        // If the focused tile changed during the tween, toggle the two tiles.
-        if (best != _tweenFocused)
-        {
-            if (_tweenFocused != null) _tweenFocused.SetFocused(false);
-            if (best != null) best.SetFocused(true);
-            _tweenFocused = best;
+            // 1 at selector, fading to 0 over ~one row
+            float w = Mathf.Clamp01(1f - (d / RowStep));
+            tiles[i].SetFocusWeight(w);
         }
     }
 
@@ -312,7 +303,10 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     {
         var under = TileUnderSelector();
         for (int i = 0; i < tiles.Count; i++)
-            tiles[i].SetFocused(tiles[i] == under);
+        {
+            bool isCenter = (tiles[i] == under);
+            tiles[i].SetFocused(isCenter, instant: true);   // <- instant snap, no tween here
+        }
     }
 
     SongTileView TileUnderSelector()
