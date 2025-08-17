@@ -4,6 +4,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
+using UnityEngine.InputSystem;
 
 public class CreditsScreen : MonoBehaviour, IUIScreen
 {
@@ -58,7 +59,7 @@ public class CreditsScreen : MonoBehaviour, IUIScreen
         screens?.Pop();
     }
     
-    public void OnCancel(BaseEventData eventData) => OnBack();
+    public void OnUI_Cancel(InputValue value) => OnBack();
 
     // --- Dynamic list (optional) ---
     private void BuildDynamicListIfNeeded()

@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using TMPro;
+using UnityEngine.InputSystem;
 
-public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
+public class SettingsScreen : MonoBehaviour, IUIScreen
 {
     
     private GraphicsSettings candidateGraphics;          // what we’re previewing
@@ -144,7 +145,7 @@ public class SettingsScreen : MonoBehaviour, IUIScreen, ICancelHandler
 
     public void OnHide() { }
 
-    public void OnCancel(BaseEventData eventData) => OnBack();
+    public void OnUI_Cancel(InputValue value) => OnBack();
 
     public void OnBack() => screens?.Pop();
 

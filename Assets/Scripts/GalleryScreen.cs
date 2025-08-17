@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class GalleryScreen : MonoBehaviour, IUIScreen
 {
@@ -128,7 +129,10 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
     {
         lastTileFocused = EventSystem.current.currentSelectedGameObject;
         viewer.Show(item);
-        EventSystem.current.SetSelectedGameObject(null); // freeze focus while viewer is open
+
+        // keep a valid selection alive so Cancel (B/Esc) still routes to this screen
+        var fallback = lastTileFocused ? lastTileFocused : firstSelected;
+        if (fallback) EventSystem.current.SetSelectedGameObject(fallback);
     }
 
     // --- Back / Cancel ---
@@ -144,7 +148,7 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
     }
     
 
-    public void OnCancel(BaseEventData _) => OnBack();
+    public void OnUI_Cancel(InputValue value) => OnBack();
     
     [ContextMenu("Unlock All Gallery (and Rebuild)")]
     void UnlockAllAndRebuild()

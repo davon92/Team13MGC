@@ -62,6 +62,13 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     [SerializeField] float repeatDelay = 0.35f;
     [SerializeField] float repeatRate  = 8.333333f; // ~10/sec
     
+    [SerializeField] AudioSource uiAudio;          // a separate AudioSource for UI sounds
+    [SerializeField] AudioClip   sfxMove;          // short “tick”/“blip” for up/down
+    [SerializeField] AudioClip   sfxSubmit;        // optional
+    [SerializeField] AudioClip   sfxCancel;        // optional
+    [SerializeField, Range(0f,1f)] float sfxVolume = 0.8f;
+    [SerializeField, Range(0f,0.25f)] float sfxPitchJitter = 0.05f; // subtle variety
+    
     // Track which tile is currently focused while the list is tweening.
     // We toggle only when this changes to avoid multiple tiles animating.
     SongTileView _tweenFocused;
@@ -184,7 +191,7 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
 
     // ───────────────────────── Input (Send Messages) ─────────────────────────
     // Called by PlayerInput (Behavior = Send Messages)
-    public void OnNavigate(InputValue value)
+    public void OnUI_Navigate(InputValue value)
     {
         if (transitioning) return;
 
@@ -231,15 +238,12 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         }
     }
 
-    public void OnSubmit(InputValue value)
+    public void OnUI_Submit(InputValue value)
     {
         if (value.isPressed) Confirm();
     }
 
-    public void OnCancel(InputValue value)
-    {
-        if (value.isPressed) OnBack();
-    }
+    public void OnUI_Cancel(InputValue value) => OnBack();
 
     // ───────────────────────── Movement ─────────────────────────
     void Move(int dir)
@@ -248,7 +252,8 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
 
         // as soon as we start moving, cancel any pending/playing preview
         CancelPreview();
-
+        PlayOneShot(sfxMove);
+        
         busy = true;
         _tweenFocused = null; 
         moveTween?.Kill();
@@ -505,6 +510,15 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
             }
             yield return null;
         }
+    }
+    
+    void PlayOneShot(AudioClip clip)
+    {
+        if (!uiAudio || !clip) return;
+        float old = uiAudio.pitch;
+        uiAudio.pitch = 1f + UnityEngine.Random.Range(-sfxPitchJitter, sfxPitchJitter);
+        uiAudio.PlayOneShot(clip, sfxVolume);
+        uiAudio.pitch = old; // restore immediately; PlayOneShot captured the pitch
     }
 
     void CancelPreview()

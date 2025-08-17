@@ -2,11 +2,12 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using System.Threading.Tasks;
+using UnityEngine.InputSystem;
 #if DOTWEEN_PRESENT
 using DG.Tweening;
 #endif
 
-public class StoryMenuScreen : MonoBehaviour, IUIScreen, ICancelHandler
+public class StoryMenuScreen : MonoBehaviour, IUIScreen
 {
     [Header("Wiring")]
     [SerializeField] private GameObject root;            // Screen_Story panel
@@ -66,7 +67,7 @@ public class StoryMenuScreen : MonoBehaviour, IUIScreen, ICancelHandler
 
     public void OnBack() => screens?.Pop();
 
-    public void OnCancel(BaseEventData e) => OnBack();
+    public void OnUI_Cancel(InputValue value) => OnBack();
 
     // --- Flow ---
     private async Task StartNewGameAsync()
