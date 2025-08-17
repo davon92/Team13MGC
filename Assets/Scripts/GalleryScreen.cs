@@ -65,6 +65,7 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
 
             var tile = Instantiate(tilePrefab, gridRoot);
             tile.Setup(item, unlocked, OnTileClicked);
+            tile.SetSelectionForwarder(ScrollTo);
             pool.Add(tile.gameObject);
 
             if (firstTileBtn == null) firstTileBtn = tile.GetComponent<Button>();
@@ -84,16 +85,44 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
     void ScrollTo(RectTransform tile)
     {
         if (!scroll || !tile) return;
-        Canvas.ForceUpdateCanvases();                   // make sure layouts are up-to-date
-        var content = scroll.content;
-        var view = scroll.viewport;
 
-        // move content so that tile’s left edge is near the viewport’s left
-        Vector3 worldPoint = tile.TransformPoint(new Vector3(tile.rect.xMin, 0, 0));
-        Vector3 localPoint = view.InverseTransformPoint(worldPoint);
-        float offset = (view.rect.xMin - localPoint.x);
-        content.anchoredPosition += new Vector2(offset, 0);
+        // Make sure layout numbers are current.
+        Canvas.ForceUpdateCanvases();
+
+        var view    = scroll.viewport;
+        var content = scroll.content;
+
+        // If there's nothing to scroll, bail.
+        float scrollable = Mathf.Max(0f, content.rect.height - view.rect.height);
+        if (scrollable <= 0f) return;
+
+        // World corners -> viewport local space.
+        Vector3[] v = new Vector3[4]; view.GetWorldCorners(v);
+        Vector3[] t = new Vector3[4]; tile.GetWorldCorners(t);
+        for (int i = 0; i < 4; i++)
+        {
+            v[i] = view.InverseTransformPoint(v[i]);
+            t[i] = view.InverseTransformPoint(t[i]);
+        }
+
+        // dy > 0 means the tile's top is above the viewport's top (needs to scroll DOWN).
+        // dy < 0 means the tile's bottom is below the viewport's bottom (needs to scroll UP).
+        float dy = 0f;
+        if (t[1].y > v[1].y)            // tile top above view top
+            dy = t[1].y - v[1].y;
+        else if (t[0].y < v[0].y)       // tile bottom below view bottom
+            dy = t[0].y - v[0].y;
+
+        if (Mathf.Abs(dy) < 0.5f) return; // already fully visible
+
+        // Convert pixel delta (dy) into a normalized delta for ScrollRect.
+        // verticalNormalizedPosition: 1 = top, 0 = bottom.
+        float deltaNorm = dy / scrollable;
+        scroll.verticalNormalizedPosition = Mathf.Clamp01(
+            scroll.verticalNormalizedPosition + deltaNorm
+        );
     }
+
 
     void OnTileClicked(GalleryItem item)
     {
