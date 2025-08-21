@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: c1d9eac2f0b00b24ab62fa5f7f22f5b1
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 12385, guid: 0000000000000000e000000000000000, type: 0}
+  disableValidation: 0
+AssetOrigin:
+  serializedVersion: 1
+  productId: 320308
+  packageName: Yarn Graph - Visual Scripting for Yarn Spinner 3 Dialogue System
+  packageVersion: 1.0.1
+  assetPath: Assets/Plugins/YarnGraph/Resources/DialogueElementListToolStyles.uss
+  uploadId: 775738

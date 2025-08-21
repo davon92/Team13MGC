@@ -27,7 +27,7 @@ public class Fade : MonoBehaviour
     public Task In(float duration = -1f)  => FadeTo(0f, duration < 0 ? defaultDuration : duration);
     public Task Out(float duration = -1f) => FadeTo(1f, duration < 0 ? defaultDuration : duration);
 
-    private Task FadeTo(float target, float duration)
+    public Task FadeTo(float target, float duration)
     {
         var tcs = new TaskCompletionSource<bool>();
         cg.DOKill();

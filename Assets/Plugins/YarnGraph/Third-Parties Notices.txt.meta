@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 088c4d8a36e43624ab08066364ac8e83
+TextScriptImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 320308
+  packageName: Yarn Graph - Visual Scripting for Yarn Spinner 3 Dialogue System
+  packageVersion: 1.0.1
+  assetPath: Assets/Plugins/YarnGraph/Third-Parties Notices.txt
+  uploadId: 775738

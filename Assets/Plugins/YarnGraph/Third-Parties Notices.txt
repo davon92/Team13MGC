@@ -1,0 +1,14 @@
+Third-Party Notice – Yarn Graph
+
+This Unity asset does not bundle any third-party binaries.
+On first use—and only with your explicit consent—it can download and install the open-source packages listed below via the Unity Package Manager:
+
+xNode — © 2014 – 2023 Siccity — MIT License
+Repository (v1.8.0): https://github.com/Siccity/xNode
+Full license text: https://github.com/Siccity/xNode/blob/master/LICENSE
+
+Yarn Spinner — © 2015 – 2025 Yarn Spinner Tool contributors — MIT License
+Repository (v2.5.0): https://github.com/YarnSpinnerTool/YarnSpinner-Unity
+Full license text: https://github.com/YarnSpinnerTool/YarnSpinner/blob/main/LICENSE
+
+Yarn Graph merely links against xNode and Yarn Spinner at edit-time (see the using XNode; and using Yarn.Unity; directives in the source). The asset remains fully functional without these packages unless you choose to activate their respective graph-editing or dialogue-system features.

@@ -1,128 +1,74 @@
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
-using System.Threading.Tasks;
 using UnityEngine.InputSystem;
-#if DOTWEEN_PRESENT
-using DG.Tweening;
-#endif
 
-public class StoryMenuScreen : MonoBehaviour, IUIScreen
+public class StoryScreenMenu : MonoBehaviour, IUIScreen
 {
     [Header("Wiring")]
-    [SerializeField] private GameObject root;            // Screen_Story panel
-    [SerializeField] private GameObject firstSelected;   // New Game button
-    [SerializeField] private ScreenController screens;
-    [SerializeField] private Button newGameButton;
-    [SerializeField] private Button loadGameButton;
-    [SerializeField] private Button backButton;
+    [SerializeField] GameObject root;
+    [SerializeField] GameObject firstSelected;
+    [SerializeField] ScreenController screens;
+    [SerializeField] Button newGameButton;
+    [SerializeField] Button loadGameButton;
+    [SerializeField] Button backButton;
+    
 
-    [Header("Optional overwrite modal")]
-    [SerializeField] private bool confirmOverwriteIfSaveExists = true;
-    [SerializeField] private GameObject overwriteModalRoot; // small panel with Yes/No
-    [SerializeField] private Button overwriteYesButton;
-    [SerializeField] private Button overwriteNoButton;
-
-    public string ScreenId => MenuIds.StoryMenu;
-    public GameObject Root => root != null ? root : gameObject;
+    public string     ScreenId      => MenuIds.StoryMenu;
+    public GameObject Root          => root != null ? root : gameObject;
     public GameObject FirstSelected => firstSelected;
 
     void Awake()
     {
-        if (root == null) root = gameObject;
-
-        // Button hooks (so you don't forget to wire in the Inspector)
-        if (newGameButton)  newGameButton.onClick.AddListener(OnNewGame);
+        if (newGameButton) newGameButton.onClick.AddListener(OnNewGame);
         if (loadGameButton) loadGameButton.onClick.AddListener(OnLoadGame);
-        if (backButton)     backButton.onClick.AddListener(OnBack);
-
-        if (overwriteModalRoot) HideModalImmediate();
-        if (overwriteYesButton) overwriteYesButton.onClick.AddListener(() => { HideModal(); _ = StartNewGameAsync(); });
-        if (overwriteNoButton)  overwriteNoButton.onClick.AddListener(HideModal);
+        if (backButton) backButton.onClick.AddListener(OnBack);
     }
 
     public void OnShow(object args)
     {
-        if (FirstSelected)
-            EventSystem.current.SetSelectedGameObject(FirstSelected);
+        if (EventSystem.current && firstSelected)
+            EventSystem.current.SetSelectedGameObject(firstSelected);
+        var grp = Root.GetComponentInChildren<UISelectScalerGroup>(true);
+        if (grp) grp.SyncNow(instant: true);
     }
 
-    public void OnHide() { }
+    public void OnHide() {}
 
-    // --- Actions ---
-    public void OnNewGame()
+    async void OnNewGame()
     {
-        if (confirmOverwriteIfSaveExists && SaveSystem.HasAnySave())
+        // If autosave exists, confirm overwrite
+        if (SaveSystem.SlotExists(SaveSystem.AutoSlot))
         {
-            ShowModal();
-            return;
+            bool yes = await ModalHub.I.Confirm.ShowAsync(
+                "Starting a new game will overwrite your current Auto Save. Continue?"
+            );
+            if (!yes) return;
         }
-        _ = StartNewGameAsync();
+
+        // Create/overwrite autosave and immediately load VN
+        SaveSystem.CreateNewGame(firstChapterId: "Prologue");
+        await SceneFlow.LoadVNAsync(newGame: true);
     }
 
-    public void OnLoadGame()
+    void OnLoadGame()
     {
-        screens?.Show(MenuIds.SaveLoad);   // make MenuIds.SaveLoad (or whatever id you use)
-    }
-
-    public void OnBack() => screens?.Pop();
-
-    public void OnUI_Cancel(InputValue value) => OnBack();
-
-    // --- Flow ---
-    private async Task StartNewGameAsync()
-    {
-        SaveSystem.CreateNewGame();              // stubbed below; replace with your real save init
-        await Fade.Instance.Out();
-        await SceneFlow.LoadVNAsync(newGame: true); // add the helper in SceneFlow (below)
-        await Fade.Instance.In();
-    }
-
-    // --- Modal helpers ---
-    private void ShowModal()
-    {
-        if (!overwriteModalRoot) return;
-        overwriteModalRoot.SetActive(true);
-#if DOTWEEN_PRESENT
-        var cg = EnsureCanvasGroup(overwriteModalRoot);
-        cg.alpha = 0f; cg.blocksRaycasts = true; cg.interactable = true;
-        cg.DOFade(1f, 0.15f).SetUpdate(true);
-#else
-        var cg = EnsureCanvasGroup(overwriteModalRoot);
-        cg.alpha = 1f; cg.blocksRaycasts = true; cg.interactable = true;
-#endif
-        EventSystem.current.SetSelectedGameObject(overwriteYesButton ? overwriteYesButton.gameObject : null);
-    }
-
-    private void HideModal()
-    {
-        if (!overwriteModalRoot) return;
-#if DOTWEEN_PRESENT
-        var cg = EnsureCanvasGroup(overwriteModalRoot);
-        cg.DOKill();
-        cg.DOFade(0f, 0.12f).SetUpdate(true).OnComplete(() =>
+        screens?.Push(MenuIds.SaveLoad, new SaveSlotsScreen.Args
         {
-            cg.blocksRaycasts = false; cg.interactable = false;
-            overwriteModalRoot.SetActive(false);
+            mode = SaveSlotsScreen.Mode.Load
         });
-#else
-        var cg = EnsureCanvasGroup(overwriteModalRoot);
-        cg.alpha = 0f; cg.blocksRaycasts = false; cg.interactable = false;
-        overwriteModalRoot.SetActive(false);
-#endif
     }
 
-    private void HideModalImmediate()
+    public void OnBack()
     {
-        var cg = EnsureCanvasGroup(overwriteModalRoot);
-        cg.alpha = 0f; cg.blocksRaycasts = false; cg.interactable = false;
-        overwriteModalRoot.SetActive(false);
+        if (screens == null) return;
+        if (screens.CanPop) screens.Pop();
+        else screens.Show(MenuIds.Title);   // explicit fall-back if Story is the root
     }
-
-    private static CanvasGroup EnsureCanvasGroup(GameObject go)
+    
+    public void OnUI_Cancel(InputValue v)
     {
-        var cg = go.GetComponent<CanvasGroup>();
-        if (!cg) cg = go.AddComponent<CanvasGroup>();
-        return cg;
+        if (v.isPressed) OnBack();
     }
 }

@@ -4,15 +4,15 @@ using UnityEngine.Audio;
 [System.Serializable]
 public class GameplaySettings
 {
-    public float mouseSensitivity = 0.5f;     // 0.1–2.0
-    public float controllerSensitivity = 0.5f;// 0.1–2.0
+    public float mouseSensitivity = 1.0f;      // 0..1
+    public float controllerSensitivity = 0.5f; // 0..1
     public bool invertY = false;
 }
 
 [System.Serializable]
 public class AudioSettings
 {
-    public float masterVolume = 1.0f;         // 0–1
+    public float masterVolume = 1.0f;          // 0..1
 }
 
 [System.Serializable]
@@ -20,40 +20,41 @@ public class GraphicsSettings
 {
     public int width;
     public int height;
-    public int refreshRate;                   // Hz
-    public FullScreenMode windowMode = FullScreenMode.FullScreenWindow; // Borderless default
-    public int qualityIndex = 2;              // Unity Quality level index
+    public int refreshRate;                    // Hz
+    public FullScreenMode windowMode = FullScreenMode.FullScreenWindow;
+    public int qualityIndex = 2;               // Unity quality level index
     public bool vSync = true;
 }
 
 public static class SettingsService
 {
-    // Audio
-    public static AudioMixer Mixer; // assign in Bootstrap or via inspector to expose "MasterVolume" (in dB)
+    // Assign this once (e.g., in a bootstrapper, or from inspector on a tiny scene object)
+    // The exposed parameter on the mixer must be named "MasterVolume" (in dB).
+    public static AudioMixer Mixer;
 
     public static GameplaySettings Gameplay { get; private set; } = new();
     public static AudioSettings    Audio    { get; private set; } = new();
-    public static GraphicsSettings Graphics { get; set; } = new();
+    public static GraphicsSettings Graphics { get; set; }         = new();
 
     const string KeyGameplay = "settings_gameplay";
     const string KeyAudio    = "settings_audio";
     const string KeyGraphics = "settings_graphics";
 
+    // ---- Persistence ----
     public static void Load()
     {
         bool firstRun = !PlayerPrefs.HasKey(KeyGameplay)
-                        && !PlayerPrefs.HasKey(KeyAudio)
-                        && !PlayerPrefs.HasKey(KeyGraphics);
+                     && !PlayerPrefs.HasKey(KeyAudio)
+                     && !PlayerPrefs.HasKey(KeyGraphics);
 
-        Gameplay = JsonUtility.FromJson<GameplaySettings>(PlayerPrefs.GetString(KeyGameplay, "")) ?? new GameplaySettings();
-        Audio    = JsonUtility.FromJson<AudioSettings>(PlayerPrefs.GetString(KeyAudio, ""))       ?? new AudioSettings();
-        Graphics = JsonUtility.FromJson<GraphicsSettings>(PlayerPrefs.GetString(KeyGraphics, "")) ?? DefaultGraphics();
+        Gameplay = JsonSafe<PlayerPrefsWrapper, GameplaySettings>(KeyGameplay) ?? new GameplaySettings();
+        Audio    = JsonSafe<PlayerPrefsWrapper, AudioSettings>(KeyAudio)       ?? new AudioSettings();
+        Graphics = JsonSafe<PlayerPrefsWrapper, GraphicsSettings>(KeyGraphics) ?? DefaultGraphics();
 
         ApplyGameplay();
-        ApplyAudio();
-        // Don't auto-apply graphics here.
+        ApplyAudio(); // don’t auto-apply graphics; apply on “Apply” button
 
-        if (firstRun) Save(); // commit defaults so next boot restores the same values
+        if (firstRun) Save();
     }
 
     public static void Save()
@@ -64,45 +65,62 @@ public static class SettingsService
         PlayerPrefs.Save();
     }
 
+    // ---- Apply live ----
     public static void ApplyGameplay()
     {
-        // Expose these to your input/controller systems later.
-        // For now they just live in SettingsService.Gameplay and consumers read them.
+        // Keep as a central place if input code needs to read these and react.
+        // (Your sliders/toggles already write to Gameplay in SettingsScreen.)
     }
 
     public static void ApplyAudio()
     {
         if (Mixer == null) return;
 
-        // Slider is 0..1 (stored). Convert to decibels with a log curve.
+        // Map 0..1 to decibels (log curve). 1 -> 0dB, 0.5 -> -6.02dB, 0 -> minDb
         float dB = Linear01ToDecibels(Audio.masterVolume, -80f);
-        Mixer.SetFloat("MasterVolume", dB); // make sure this exposed param exists
-    }
-    
-    /// <summary>
-    /// Maps 0..1 to decibels using a log curve. 1 -> 0 dB, 0.5 -> -6.02 dB, 0 -> minDb.
-    /// </summary>
-    public static float Linear01ToDecibels(float v, float minDb = -80f)
-    {
-        v = Mathf.Clamp01(v);
-        if (v <= 0.0001f) return minDb;               // effectively silent
-        return Mathf.Log10(v) * 20f;                  // classic audio mapping
+        Mixer.SetFloat("MasterVolume", dB);
     }
 
     public static void ApplyGraphics(GraphicsSettings g)
     {
-        // Apply resolution + mode
         Screen.SetResolution(g.width, g.height, g.windowMode, g.refreshRate);
         QualitySettings.vSyncCount = g.vSync ? 1 : 0;
-        QualitySettings.SetQualityLevel(Mathf.Clamp(g.qualityIndex, 0, QualitySettings.names.Length - 1), true);
+        QualitySettings.SetQualityLevel(
+            Mathf.Clamp(g.qualityIndex, 0, QualitySettings.names.Length - 1),
+            true);
+    }
+
+    // ---- Helpers ----
+    public static float Linear01ToDecibels(float v, float minDb = -80f)
+    {
+        v = Mathf.Clamp01(v);
+        if (v <= 0.0001f) return minDb;
+        return Mathf.Log10(v) * 20f;
     }
 
     private static GraphicsSettings DefaultGraphics()
     {
         var cur = Screen.currentResolution;
-        return new GraphicsSettings {
-            width = cur.width, height = cur.height, refreshRate = cur.refreshRate,
-            windowMode = FullScreenMode.FullScreenWindow, qualityIndex = QualitySettings.GetQualityLevel(), vSync = QualitySettings.vSyncCount > 0
+        return new GraphicsSettings
+        {
+            width = cur.width,
+            height = cur.height,
+            refreshRate = cur.refreshRate,
+            windowMode = FullScreenMode.FullScreenWindow,
+            qualityIndex = QualitySettings.GetQualityLevel(),
+            vSync = QualitySettings.vSyncCount > 0
         };
     }
+
+    // Small helper to avoid null on bad/missing JSON
+    private static TOut JsonSafe<TWrapper, TOut>(string key) where TOut : class
+    {
+        var json = PlayerPrefs.GetString(key, "");
+        if (string.IsNullOrEmpty(json)) return null;
+        try { return JsonUtility.FromJson<TOut>(json); }
+        catch { return null; }
+    }
+
+    // Dummy wrapper type (not used, keeps generic signature simple)
+    private class PlayerPrefsWrapper { }
 }

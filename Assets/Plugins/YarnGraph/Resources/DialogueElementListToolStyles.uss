@@ -1,0 +1,7 @@
+.drag-ghost {
+    opacity: 0.5;
+}
+.drag-over {
+    border-top-width: 2px;
+    border-top-color: blue;
+}

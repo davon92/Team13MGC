@@ -1648,6 +1648,7 @@ GameObject:
   - component: {fileID: 3438245289444970474}
   - component: {fileID: 2532729502418932819}
   - component: {fileID: 2899064267287542053}
+  - component: {fileID: 5936460459159746695}
   m_Layer: 0
   m_Name: AudioButton
   m_TagString: Untagged
@@ -1780,6 +1781,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5936460459159746695
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778388986263139877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b38523af41732a40baec79216037261, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphic: {fileID: 1063205570002864421}
+  selectedScale: 1
+  duration: 0.12
+  ease: 6
+  axis: 0
+  setZeroOnEnable: 1
+  hoverActsLikeSelect: 1
 --- !u!1 &1832742081278338987
 GameObject:
   m_ObjectHideFlags: 0
@@ -2378,6 +2398,7 @@ GameObject:
   - component: {fileID: 8644440866325418366}
   - component: {fileID: 6180576015623581682}
   - component: {fileID: 1223469885477005728}
+  - component: {fileID: 2653587897279154140}
   m_Layer: 0
   m_Name: GraphicsButton
   m_TagString: Untagged
@@ -2510,6 +2531,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &2653587897279154140
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2395851160894595920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b38523af41732a40baec79216037261, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphic: {fileID: 4507148943807492656}
+  selectedScale: 1
+  duration: 0.12
+  ease: 6
+  axis: 0
+  setZeroOnEnable: 1
+  hoverActsLikeSelect: 1
 --- !u!1 &2636519591066293983
 GameObject:
   m_ObjectHideFlags: 0
@@ -5516,6 +5556,7 @@ GameObject:
   - component: {fileID: 1992854365268057184}
   - component: {fileID: 6698807873780418206}
   - component: {fileID: 3199114708215599248}
+  - component: {fileID: 732032307894992050}
   m_Layer: 0
   m_Name: GameplayButton
   m_TagString: Untagged
@@ -5648,6 +5689,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &732032307894992050
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6669000858688461892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b38523af41732a40baec79216037261, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphic: {fileID: 352878704220989140}
+  selectedScale: 1
+  duration: 0.12
+  ease: 6
+  axis: 0
+  setZeroOnEnable: 1
+  hoverActsLikeSelect: 1
 --- !u!1 &6717795085019521394
 GameObject:
   m_ObjectHideFlags: 0
@@ -8790,6 +8850,7 @@ GameObject:
   - component: {fileID: 4386646269183275181}
   - component: {fileID: 2021183425135983573}
   - component: {fileID: 7962384295494366321}
+  - component: {fileID: 934649190484844772}
   m_Layer: 0
   m_Name: Screen_Settings
   m_TagString: Untagged
@@ -8867,6 +8928,22 @@ MonoBehaviour:
   applyGraphicsButton: {fileID: 2510880772078390682}
   masterVolume: {fileID: 3926085115146554278}
   backButton: {fileID: 7869755623083304734}
+--- !u!114 &934649190484844772
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8828856994221757884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55a8913c9bcea1f4bad0987f0f42549b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scopeRoot: {fileID: 4386646269183275181}
+  syncOnEnable: 1
+  pollSelection: 1
+  instantOnSync: 1
 --- !u!1 &8843053718877753189
 GameObject:
   m_ObjectHideFlags: 0

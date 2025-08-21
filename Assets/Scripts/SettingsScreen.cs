@@ -132,7 +132,8 @@ public class SettingsScreen : MonoBehaviour, IUIScreen
     {
         // Initial focus
         if (FirstSelected) EventSystem.current.SetSelectedGameObject(FirstSelected);
-
+        var grp = Root.GetComponentInChildren<UISelectScalerGroup>(true);
+        if (grp) grp.SyncNow(instant: true);
         // Populate UI from settings
         RefreshGameplayUI();
         RefreshAudioUI();

@@ -6,25 +6,27 @@ using UnityEngine.UI;
 using TMPro;
 using DG.Tweening;
 
-
 [RequireComponent(typeof(CanvasGroup))]
 public class ConfirmModal : MonoBehaviour, ICancelHandler
 {
     [Header("Wiring")]
-    [SerializeField] private CanvasGroup cg;           // on the same GO
-    [SerializeField] private TMP_Text    messageLabel; // optional
-    [SerializeField] private TMP_Text    countdownLabel; // optional
-    [SerializeField] private Button      yesButton;
-    [SerializeField] private Button      noButton;
-    [SerializeField] private GameObject  firstSelected; // defaults to yesButton
-
+    [SerializeField] private CanvasGroup cg;                // on same GO
+    [SerializeField] private TMP_Text messageLabel;         // optional
+    [SerializeField] private TMP_Text countdownLabel;       // optional
+    [SerializeField] private Button yesButton;
+    [SerializeField] private Button noButton;
+    [SerializeField] private GameObject firstSelected;      // default focus inside modal
+    public bool IsOpen => isOpen;
+    public GameObject FirstSelected => firstSelected;
     [Header("Animation")]
-    [SerializeField] private float fadeDuration = 0.15f;
+    [SerializeField, Range(0.05f, 0.5f)] private float fadeDuration = 0.15f;
 
-    bool isOpen;
-    float countdownRemaining;
-    bool timeoutDefault = false; // false = No by default
-    TaskCompletionSource<bool> tcs;
+    // state
+    private TaskCompletionSource<bool> tcs;
+    private bool isOpen;
+    private bool timeoutDefault;
+    private float countdownRemaining;
+    private GameObject prevSelected;
 
     void Reset()
     {
@@ -33,27 +35,28 @@ public class ConfirmModal : MonoBehaviour, ICancelHandler
 
     void Awake()
     {
-        if (!cg) cg = GetComponent<CanvasGroup>();
-        CloseImmediate();
-
+        if (cg == null) cg = GetComponent<CanvasGroup>();
         if (yesButton) yesButton.onClick.AddListener(() => Close(true));
-        if (noButton)  noButton.onClick.AddListener(() => Close(false));
-        if (!firstSelected && yesButton) firstSelected = yesButton.gameObject;
+        if (noButton)  noButton.onClick.AddListener(()  => Close(false));
+        CloseImmediate(); // start hidden
     }
 
     void Update()
     {
         if (!isOpen || countdownRemaining <= 0f) return;
-
         countdownRemaining -= Time.unscaledDeltaTime;
         if (countdownLabel)
-            countdownLabel.text = $"({Mathf.CeilToInt(Mathf.Max(0f, countdownRemaining))}s)";
-
+        {
+            var secs = Mathf.CeilToInt(Mathf.Max(0f, countdownRemaining));
+            countdownLabel.text = $"({secs}s)";
+        }
         if (countdownRemaining <= 0f)
+        {
             Close(timeoutDefault);
+        }
     }
 
-    public void OnCancel(BaseEventData eventData) => Close(false);
+    public void OnCancel(BaseEventData _) => Close(false);
 
     /// <summary>
     /// Show the modal and await a boolean result. Returns true for Yes, false for No/timeout.
@@ -61,56 +64,64 @@ public class ConfirmModal : MonoBehaviour, ICancelHandler
     /// <param name="message">Optional message string.</param>
     /// <param name="seconds">0 = no countdown.</param>
     /// <param name="defaultOnTimeout">Result returned if timer expires.</param>
-    /// <param name="focus">Optional object to receive focus (defaults to Yes).</param>
+    /// <param name="focus">Optional object to receive focus (defaults to firstSelected).</param>
     public Task<bool> ShowAsync(string message = null, float seconds = 0f, bool defaultOnTimeout = false, GameObject focus = null)
     {
-        if (isOpen) Close(false); // finish any previous prompt
+        // Finish any previous prompt
+        if (isOpen) Close(false);
 
         tcs = new TaskCompletionSource<bool>();
         isOpen = true;
         timeoutDefault = defaultOnTimeout;
         countdownRemaining = Mathf.Max(0f, seconds);
 
-        if (messageLabel && !string.IsNullOrEmpty(message))
-            messageLabel.text = message;
-        if (countdownLabel)
-            countdownLabel.text = seconds > 0 ? $"({Mathf.CeilToInt(seconds)}s)" : "";
+        if (messageLabel) messageLabel.text = string.IsNullOrEmpty(message) ? "" : message;
+        if (countdownLabel) countdownLabel.text = seconds > 0 ? $"({Mathf.CeilToInt(seconds)}s)" : "";
 
+        // remember what was selected before opening
+        prevSelected = EventSystem.current ? EventSystem.current.currentSelectedGameObject : null;
+
+        // show + fade in
         gameObject.SetActive(true);
-        cg.interactable = true; cg.blocksRaycasts = true;
-        
-        cg.alpha = 0f;
         cg.DOKill();
-        cg.DOFade(1f, fadeDuration).SetUpdate(true);
-        cg.alpha = 1f;
+        cg.alpha = 0f;
+        cg.blocksRaycasts = true;
+        cg.interactable = false;
+        cg.DOFade(1f, fadeDuration).SetUpdate(true).OnComplete(() => {
+            cg.interactable = true;
+        });
 
+        // focus inside the modal
+        var target = focus ? focus : firstSelected;
+        if (target && EventSystem.current) EventSystem.current.SetSelectedGameObject(target);
 
-        EventSystem.current.SetSelectedGameObject(focus ? focus : firstSelected);
         return tcs.Task;
-    }
-
-    /// <summary>Show using a callback instead of async/await.</summary>
-    public async void Show(string message, float seconds, bool defaultOnTimeout, GameObject focus, Action<bool> onDone)
-    {
-        bool result = await ShowAsync(message, seconds, defaultOnTimeout, focus);
-        onDone?.Invoke(result);
     }
 
     public void Close(bool result)
     {
         if (!isOpen) return;
         isOpen = false;
-        
+
         cg.DOKill();
-        cg.DOFade(0f, fadeDuration).SetUpdate(true).OnComplete(CloseImmediate);
-        CloseImmediate();
-        tcs?.TrySetResult(result);
+        cg.interactable = false;
+        // fade out, then actually hide and restore focus
+        cg.DOFade(0f, fadeDuration).SetUpdate(true).OnComplete(() => {
+            CloseImmediate();
+            // restore previous selection if possible
+            if (prevSelected && EventSystem.current)
+                EventSystem.current.SetSelectedGameObject(prevSelected);
+            prevSelected = null;
+            tcs?.TrySetResult(result);
+        });
     }
 
-    void CloseImmediate()
+    private void CloseImmediate()
     {
+        if (cg == null) cg = GetComponent<CanvasGroup>();
         cg.alpha = 0f;
-        cg.interactable = false; cg.blocksRaycasts = false;
+        cg.blocksRaycasts = false;
+        cg.interactable = false;
         gameObject.SetActive(false);
     }
 }

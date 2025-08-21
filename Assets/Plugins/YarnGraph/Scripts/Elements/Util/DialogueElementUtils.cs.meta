@@ -1,0 +1,9 @@
+fileFormatVersion: 2
+guid: 9437b3946d1c73140ae3fe4f26fa4e37
+AssetOrigin:
+  serializedVersion: 1
+  productId: 320308
+  packageName: Yarn Graph - Visual Scripting for Yarn Spinner 3 Dialogue System
+  packageVersion: 1.0.1
+  assetPath: Assets/Plugins/YarnGraph/Scripts/Elements/Util/DialogueElementUtils.cs
+  uploadId: 775738

@@ -37,11 +37,15 @@ public class TitleScreen : MonoBehaviour, IUIScreen
 
     public void OnShow(object args)
     {
-        // Ensure the first gamepad focus is set
-        if (firstSelected)
-            EventSystem.current.SetSelectedGameObject(firstSelected);
-
-        // (Optional) Play title BGM or trigger a whoosh here via your AudioManager
+        if (firstSelected && EventSystem.current)
+        {
+            var cur = EventSystem.current.currentSelectedGameObject;
+            bool needFocus = cur == null || !cur.activeInHierarchy || !cur.transform.IsChildOf(Root.transform);
+            if (needFocus)
+                EventSystem.current.SetSelectedGameObject(firstSelected);
+            var grp = Root.GetComponentInChildren<UISelectScalerGroup>(true);
+            if (grp) grp.SyncNow(instant: true);
+        }
     }
 
     public void OnHide()

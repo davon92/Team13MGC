@@ -7,6 +7,7 @@ public class Bootstrap : MonoBehaviour
 
     void Awake()
     {
+        DontDestroyOnLoad(gameObject);
         SettingsService.Mixer = mixer;
         SettingsService.Load();  // applies audio on boot
     }

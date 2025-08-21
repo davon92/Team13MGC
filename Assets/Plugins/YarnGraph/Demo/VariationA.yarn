@@ -1,0 +1,57 @@
+// DialogueNodeStart Tutorial
+title: Tutorial
+---
+<<declare $Number = 0>>
+<<declare $Text = "no text">>
+<<declare $BoolValue = false>>
+<<declare $MadeDecision = false>>
+<<if $MadeDecision == true>>
+	{$Text}: As you can see, you can create an entire dialogue within a single node. #RegisteredExampleInlineTag
+	{$Text}: ...and this approach feels more like Game Creator 2
+	{$Text}: However, this approach is often not optimal, #NotRegisteredExampleInlineTag
+	{$Text}: as nested lists can lead to editor performance issues
+	{$Text}: especially when the Unity Editor has to render numerous expanded elements in a dialogue node.
+	{$Text}: An alternative approach is demonstrated in VariationB.
+	/// EDIT: I commented out the line below to prevent errors in the Demo Scene as it would require an existing run "DeactivateGameObject" yarn command. If you have questions, contact me on discord
+	/// <<run "DeactivateGameObject">> 
+<<else>>
+	Narrator: Hi, this dialogue was created entirely with DialogueElements.
+	Narrator: Variables, tags, and commands can be declared and edited in the upper-left menu entries.
+	Narrator: You can export a graph by clicking the Export Yarn button in the upper-right corner. 
+	Narrator: Auto-arranging of graph nodes is still not working properly.
+	Narrator: This step is optional, but use Refresh & Save if the graph node titles haven't updated to the correct names.
+	Narrator: Now, let us set a few variables
+	<<set $Number to 2>>
+	<<set $Text to "Tutorial">>
+	<<set $BoolValue to true>>
+	{$Text}: The variables are set.
+	{$Text}: Now let us check out the Decision Element
+	// YarnDecisionInfo: OriginalOptions=3; Options=[Choose A: $BoolValue == true, Choose B: none, Choose C: none]
+	// DecisionElement in Node unknown Start
+	<<if $BoolValue == true>>
+        -> Choose B
+            : Good Choice
+            <<set $MadeDecision to true>>
+            <<jump Tutorial>>
+        -> Choose C
+            : Excellent
+            <<set $MadeDecision to true>>
+            <<jump Tutorial>>
+        -> Choose A
+            : Well done!
+            <<set $MadeDecision to true>>
+            <<jump Tutorial>>
+	<<else>>
+        -> Choose B
+            : Good Choice
+            <<set $MadeDecision to true>>
+            <<jump Tutorial>>
+        -> Choose C
+            : Excellent
+            <<set $MadeDecision to true>>
+            <<jump Tutorial>>
+	<<endif>>
+	// DecisionElement in Node unknown End
+<<endif>>
+===
+// DialogueNodeEnd Tutorial

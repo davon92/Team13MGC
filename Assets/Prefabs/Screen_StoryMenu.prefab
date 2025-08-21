@@ -297,6 +297,7 @@ GameObject:
   - component: {fileID: 5947133811008804336}
   - component: {fileID: 8836742106717250237}
   - component: {fileID: 1383363341263334562}
+  - component: {fileID: 9111477172414664833}
   m_Layer: 0
   m_Name: Screen_StoryMenu
   m_TagString: Untagged
@@ -358,10 +359,22 @@ MonoBehaviour:
   newGameButton: {fileID: 2538380894617020922}
   loadGameButton: {fileID: 1868343079015534953}
   backButton: {fileID: 8787183786827233329}
-  confirmOverwriteIfSaveExists: 0
-  overwriteModalRoot: {fileID: 0}
-  overwriteYesButton: {fileID: 0}
-  overwriteNoButton: {fileID: 0}
+--- !u!114 &9111477172414664833
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 868444387570910106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55a8913c9bcea1f4bad0987f0f42549b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  scopeRoot: {fileID: 5947133811008804336}
+  syncOnEnable: 1
+  pollSelection: 1
+  instantOnSync: 1
 --- !u!1 &1035840059812644650
 GameObject:
   m_ObjectHideFlags: 0
@@ -375,6 +388,7 @@ GameObject:
   - component: {fileID: 2653318964713382106}
   - component: {fileID: 1868343079015534953}
   - component: {fileID: 2328924310780055341}
+  - component: {fileID: 1296077570580251208}
   m_Layer: 0
   m_Name: LoadGameButton
   m_TagString: Untagged
@@ -507,6 +521,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &1296077570580251208
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035840059812644650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b38523af41732a40baec79216037261, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphic: {fileID: 9126274694983094859}
+  selectedScale: 1
+  duration: 0.12
+  ease: 6
+  axis: 0
+  setZeroOnEnable: 1
+  hoverActsLikeSelect: 1
 --- !u!1 &1224662577477900373
 GameObject:
   m_ObjectHideFlags: 0
@@ -795,6 +828,7 @@ GameObject:
   - component: {fileID: 3354891727885487325}
   - component: {fileID: 2538380894617020922}
   - component: {fileID: 8726098629358016518}
+  - component: {fileID: 7842415305956713412}
   m_Layer: 0
   m_Name: NewGameButton
   m_TagString: Untagged
@@ -927,6 +961,25 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &7842415305956713412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076692894272666386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b38523af41732a40baec79216037261, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  graphic: {fileID: 368998798862662047}
+  selectedScale: 1
+  duration: 0.12
+  ease: 6
+  axis: 0
+  setZeroOnEnable: 1
+  hoverActsLikeSelect: 1
 --- !u!1 &5028729822626999373
 GameObject:
   m_ObjectHideFlags: 0

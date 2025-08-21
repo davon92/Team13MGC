@@ -1,15 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using DG.Tweening;
+using UnityEngine.UI;
 
 public interface IUIScreen
 {
-    string ScreenId { get; }
-    GameObject Root { get; }
-    GameObject FirstSelected { get; }
+    string     ScreenId       { get; }
+    GameObject Root           { get; }
+    GameObject FirstSelected  { get; }
     void OnShow(object args);
     void OnHide();
 }
@@ -17,17 +17,36 @@ public interface IUIScreen
 public class ScreenController : MonoBehaviour
 {
     [Header("Screens (drag each screen script here)")]
-    [SerializeField] private List<MonoBehaviour> screenBehaviours = new(); // each implements IUIScreen
-    [SerializeField] private string initialScreenId = MenuIds.Title;
+    [SerializeField] private List<MonoBehaviour> screenBehaviours = new();
+    [SerializeField] private string initialScreenId = "";
+    [SerializeField] private bool autoShowOnStart = true;
 
     [Header("Transition")]
     [SerializeField] private bool fadeOnSwitch = true;
     [SerializeField, Range(0f, 1f)] private float fadeDuration = 0.20f;
-    [SerializeField] private Ease easeIn  = Ease.OutQuad; // when showing a screen
-    [SerializeField] private Ease easeOut = Ease.InQuad;  // when hiding a screen
+    [SerializeField] private Ease easeIn  = Ease.OutQuad;
+    [SerializeField] private Ease easeOut = Ease.InQuad;
+
+    [Header("Behavior")]
+    [Tooltip("When pushing a new screen, hide and disable the previous one so its Selectables are not part of navigation.")]
+    [SerializeField] private bool pushHidesPrevious = true;
 
     private readonly Stack<IUIScreen> stack = new();
     private Dictionary<string, IUIScreen> map;
+    private bool _transitioning;
+    public bool   CanPop => stack != null && stack.Count > 0;
+    public string TopId  => stack != null && stack.Count > 0 ? stack.Peek().ScreenId : null;
+    public bool   IsOnTop(string screenId) => TopId == screenId;
+    
+    // Remember the last selected object per screen so we can restore it on return.
+    private readonly Dictionary<string, GameObject> _lastSelectedByScreen = new();
+    
+    private static bool IsValidSelectable(GameObject go)
+    {
+        if (go == null || !go.activeInHierarchy) return false;
+        var sel = go.GetComponent<Selectable>();
+        return sel != null && sel.IsActive() && sel.interactable;
+    }
 
     void Awake()
     {
@@ -37,7 +56,6 @@ public class ScreenController : MonoBehaviour
             if (mb is not IUIScreen s || s.Root == null) continue;
             map[s.ScreenId] = s;
 
-            // Ensure each screen has a CanvasGroup
             var cg = s.Root.GetComponent<CanvasGroup>() ?? s.Root.AddComponent<CanvasGroup>();
             cg.alpha = 0f; cg.interactable = false; cg.blocksRaycasts = false;
             s.Root.SetActive(false);
@@ -46,11 +64,72 @@ public class ScreenController : MonoBehaviour
 
     void Start()
     {
+        if (!autoShowOnStart) return;
         if (!string.IsNullOrEmpty(initialScreenId) && map.TryGetValue(initialScreenId, out _))
             Show(initialScreenId);
-        else if (map.Count > 0)
-            Show(map.Keys.First());
     }
+    
+    private void BeginTransition()  => _transitioning = true;
+    private void EndTransition()    => _transitioning = false;
+    
+    void Update()
+    {
+        if (EventSystem.current == null || stack.Count == 0) return;
+
+        var top = stack.Peek();
+        var cur = EventSystem.current.currentSelectedGameObject;
+
+        // Honor an open ConfirmModal (so it keeps focus)
+        var modal = ModalHub.I != null ? ModalHub.I.Confirm : null;
+        if (modal != null && modal.IsOpen)
+        {
+            if (!IsDescendantOf(cur, modal.gameObject))
+            {
+                var toSelect = modal.FirstSelected != null ? modal.FirstSelected : modal.gameObject;
+                SafeSelect(toSelect);
+            }
+            return;
+        }
+
+        // Do not learn/overwrite remembered selection during transitions
+        if (_transitioning) return;
+
+        if (IsDescendantOf(cur, top.Root) && IsValidSelectable(cur))
+            _lastSelectedByScreen[top.ScreenId] = cur;
+
+        bool lostOrElsewhere = cur == null || !cur.activeInHierarchy || !IsDescendantOf(cur, top.Root);
+        if (lostOrElsewhere)
+        {
+            GameObject toSelect = null;
+            if (_lastSelectedByScreen.TryGetValue(top.ScreenId, out var remembered)
+                && IsDescendantOf(remembered, top.Root) && IsValidSelectable(remembered))
+                toSelect = remembered;
+            else
+                toSelect = top.FirstSelected;
+
+            SafeSelect(toSelect);
+        }
+    }
+
+
+    private static void SafeSelect(GameObject go)
+    {
+        if (go != null && EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(go);
+    }
+
+    private static bool IsDescendantOf(GameObject child, GameObject root)
+    {
+        if (child == null || root == null) return false;
+        var t = child.transform;
+        while (t != null)
+        {
+            if (t.gameObject == root) return true;
+            t = t.parent;
+        }
+        return false;
+    }
+
 
     public void Show(string id, object args = null)
     {
@@ -71,7 +150,8 @@ public class ScreenController : MonoBehaviour
         StartCoroutine(CoPop());
     }
 
-    // --- Internals (still coroutine-based to preserve stack flow) ---
+    // --- Internals ---
+
     private IEnumerator CoShow(string id, object args)
     {
         while (stack.Count > 0)
@@ -80,43 +160,93 @@ public class ScreenController : MonoBehaviour
         yield return CoPush(id, args);
     }
 
+
+// Convenience to set selection safely
+    private static void SetSelected(GameObject go)
+    {
+        if (go == null || EventSystem.current == null) return;
+        EventSystem.current.SetSelectedGameObject(go);
+    }
+
     private IEnumerator CoPush(string id, object args)
     {
-        if (!map.TryGetValue(id, out var next)) yield break;
-
-        if (stack.Count > 0)
+        BeginTransition();
+        try
         {
-            var current = stack.Peek();
-            yield return CoFadeOut(current);
+            if (!map.TryGetValue(id, out var next)) yield break;
+
+            // remember selection on current top
+            if (stack.Count > 0 && EventSystem.current != null)
+            {
+                var topNow = stack.Peek();
+                var cur = EventSystem.current.currentSelectedGameObject;
+                if (IsDescendantOf(cur, topNow.Root) && IsValidSelectable(cur))
+                    _lastSelectedByScreen[topNow.ScreenId] = cur;
+            }
+
+            if (pushHidesPrevious && stack.Count > 0)
+            {
+                var top = stack.Peek();
+                yield return CoFadeOut(top);
+                top.Root.SetActive(false);
+            }
+
+            next.Root.SetActive(true);
+            next.OnShow(args);
+            yield return CoFadeIn(next);
+
+            if (!_lastSelectedByScreen.ContainsKey(next.ScreenId) && next.FirstSelected != null)
+                _lastSelectedByScreen[next.ScreenId] = next.FirstSelected;
+
+            if (EventSystem.current != null)
+            {
+                GameObject toSelect = null;
+                if (_lastSelectedByScreen.TryGetValue(next.ScreenId, out var remembered)
+                    && IsDescendantOf(remembered, next.Root) && IsValidSelectable(remembered))
+                    toSelect = remembered;
+                else
+                    toSelect = next.FirstSelected;
+
+                SafeSelect(toSelect);
+            }
+
+            stack.Push(next);
         }
-
-        stack.Push(next);
-        next.Root.SetActive(true);
-        next.OnShow(args);
-        yield return CoFadeIn(next);
-
-        if (next.FirstSelected)
-            EventSystem.current.SetSelectedGameObject(next.FirstSelected);
+        finally { EndTransition(); }
     }
-
+    
     private IEnumerator CoPop()
     {
-        if (stack.Count <= 1) yield break;
+        BeginTransition();
+        try
+        {
+            if (stack.Count <= 1) yield break;
 
-        var top = stack.Pop();
-        yield return CoFadeOut(top);
-        top.OnHide();
-        top.Root.SetActive(false);
+            var top = stack.Pop();
+            yield return CoFadeOut(top);
+            top.OnHide();
+            top.Root.SetActive(false);
 
-        var back = stack.Peek();
-        back.Root.SetActive(true);
-        back.OnShow(null);
-        yield return CoFadeIn(back);
+            var back = stack.Peek();
+            back.Root.SetActive(true);
+            back.OnShow(null);
+            yield return CoFadeIn(back);
 
-        if (back.FirstSelected)
-            EventSystem.current.SetSelectedGameObject(back.FirstSelected);
+            if (EventSystem.current != null)
+            {
+                GameObject toSelect = null;
+                if (_lastSelectedByScreen.TryGetValue(back.ScreenId, out var remembered)
+                    && IsDescendantOf(remembered, back.Root) && IsValidSelectable(remembered))
+                    toSelect = remembered;
+                else
+                    toSelect = back.FirstSelected;
+
+                SafeSelect(toSelect);
+            }
+        }
+        finally { EndTransition(); }
     }
-
+    
     private IEnumerator CoHideTop()
     {
         var top = stack.Pop();
@@ -130,18 +260,12 @@ public class ScreenController : MonoBehaviour
         var cg = s.Root.GetComponent<CanvasGroup>();
         if (!fadeOnSwitch || cg == null) { cg.alpha = 1; cg.interactable = true; cg.blocksRaycasts = true; yield break; }
 
-        // kill any running tween on this target, then tween in
         cg.DOKill();
-        cg.alpha = Mathf.Clamp01(cg.alpha);
-        cg.interactable = false; cg.blocksRaycasts = false;
-
-        Tween tw = cg.DOFade(1f, fadeDuration)
-                   .SetEase(easeIn)
-                   .SetUpdate(true); // unscaled time (menus)
-
+        cg.alpha = 0f;
+        cg.blocksRaycasts = true;
+        Tween tw = cg.DOFade(1f, fadeDuration).SetEase(easeIn).SetUpdate(true);
         yield return tw.WaitForCompletion();
-
-        cg.interactable = true; cg.blocksRaycasts = true;
+        cg.interactable = true;
     }
 
     private IEnumerator CoFadeOut(IUIScreen s)
@@ -150,12 +274,9 @@ public class ScreenController : MonoBehaviour
         if (!fadeOnSwitch || cg == null) { cg.alpha = 0; cg.interactable = false; cg.blocksRaycasts = false; yield break; }
 
         cg.DOKill();
-        cg.interactable = false; cg.blocksRaycasts = false;
-
-        Tween tw = cg.DOFade(0f, fadeDuration)
-                   .SetEase(easeOut)
-                   .SetUpdate(true);
-
+        cg.interactable = false;
+        Tween tw = cg.DOFade(0f, fadeDuration).SetEase(easeOut).SetUpdate(true);
         yield return tw.WaitForCompletion();
+        cg.blocksRaycasts = false;
     }
 }
