@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 1e240054af7d1424fabd70eb8c5f3dff
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 227805
+  packageName: 50+ Impacts and Hits VFX Pack
+  packageVersion: 1.0
+  assetPath: Assets/VAP1/Impacts_and_Hits_VFX_Pack/URP/Shaders/URP_Glow.shader
+  uploadId: 517555

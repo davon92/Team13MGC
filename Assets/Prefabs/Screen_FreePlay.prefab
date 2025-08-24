@@ -1432,7 +1432,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 24300002, guid: a866fb23f2875bb49b44459589a9a41f, type: 2}
   m_audioClip: {fileID: 8300000, guid: d6da39f2688c5f240b7b03ad677b4f86, type: 3}
   m_Resource: {fileID: 8300000, guid: d6da39f2688c5f240b7b03ad677b4f86, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -1612,7 +1612,7 @@ MonoBehaviour:
   repeatDelay: 0.35
   repeatRate: 10
   uiAudio: {fileID: 2510584445418164370}
-  sfxMove: {fileID: 0}
+  sfxMove: {fileID: 8300000, guid: d6da39f2688c5f240b7b03ad677b4f86, type: 3}
   sfxSubmit: {fileID: 0}
   sfxCancel: {fileID: 0}
   sfxVolume: 0.8

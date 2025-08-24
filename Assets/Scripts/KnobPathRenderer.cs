@@ -22,6 +22,11 @@ public class KnobPathRenderer : MaskableGraphic
     [SerializeField] int lookBehindBeats = 2;            // and a little to the left
 
     List<RhythmTypes.KnobSpan> spans = new();
+    
+    [SerializeField] RectTransform thicknessFrom;     // ← e.g. the LeftStick icon (RectTransform)
+    [SerializeField] KnobLaneController lane;        // ← read current tracking error
+    [SerializeField] float pulseWhenOnTarget = 0.35f;// 35% extra thickness when tracing
+    [SerializeField] float pulseHz = 5f;             // how fast the pulse animates
 
     public void SetSpans(List<RhythmTypes.KnobSpan> newSpans)
     {
@@ -41,18 +46,18 @@ public class KnobPathRenderer : MaskableGraphic
         if (isActiveAndEnabled) SetVerticesDirty();
     }
 
-    protected override void OnPopulateMesh(VertexHelper vh)
+   protected override void OnPopulateMesh(VertexHelper vh)
     {
         vh.Clear();
         if (conductor == null || laneRect == null || spans == null || spans.Count == 0) return;
 
-        // Lane dimensions
-        Rect lane = laneRect.rect;
-        float laneWidth  = lane.width;
-        float laneHeight = lane.height;
+        // ----- Lane dimensions (avoid name clash with the 'lane' field) -----
+        Rect laneR = laneRect.rect;
+        float laneWidth  = laneR.width;
+        float laneHeight = laneR.height;
 
-        // Time & conversions
-        int nowSamples   = conductor.SampleTime;                 // DSP-synced visual time (samples)
+        // ----- Time & conversions -----
+        int nowSamples   = conductor.SampleTime;                   // visual time (samples)
         int spb          = Mathf.Max(1, conductor.SamplesPerBeat);
         int sr           = Mathf.Max(1, conductor.SampleRate);
         int aheadSamples = lookAheadBeats  * spb;
@@ -60,25 +65,42 @@ public class KnobPathRenderer : MaskableGraphic
         int leftBound    = nowSamples - backSamples;
         int rightBound   = nowSamples + aheadSamples;
 
-        // Step along X as samples-per-step
+        // Step along X as samples-per-step for the desired pixel step
         int stepSamples = Mathf.Max(1,
             Mathf.RoundToInt(stepPixels / Mathf.Max(1f, noteSpeedPxPerSec) * sr));
+
+        // ----- Live thickness (auto-size to icon + pulse when tracing) -----
+        float baseThickness = thickness;
+        if (thicknessFrom)
+        {
+            var r = thicknessFrom.rect;
+            baseThickness = Mathf.Max(r.width, r.height);          // icon diameter in px
+        }
+
+        float thicknessNow = baseThickness;
+        if (lane && lane.TryGetVisualError(out var err) && err <= lane.GoodWindow)
+        {
+            // 0..1 sine pulse, UI-time (unscaled)
+            float s = 0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 2f * Mathf.PI * pulseHz);
+            thicknessNow = baseThickness * (1f + pulseWhenOnTarget * s);
+        }
+        thicknessNow = Mathf.Max(1f, thicknessNow);                // safety clamp
 
         // Helpers
         float SampleToX(int sample)
         {
-            // seconds from the hit line
-            float secs = (sample - nowSamples) / (float)sr;
+            float secs = (sample - nowSamples) / (float)sr;        // seconds from hit line
             float px   = secs * noteSpeedPxPerSec;
-
-            // place hit line near the left or right edge depending on flow
-            return rightToLeft ? lane.xMin + px : lane.xMax - px;
+            return rightToLeft ? laneR.xMin + px : laneR.xMax - px;
         }
+
+        float pad = thicknessNow;                                  // keep ribbon inside lane
         float NormToY(float t) =>
-            Mathf.Lerp(lane.yMin + thickness, lane.yMax - thickness, Mathf.Clamp01(t));
+            Mathf.Lerp(laneR.yMin + pad, laneR.yMax - pad, Mathf.Clamp01(t));
 
         Color32 col = color;
 
+        // ----- Draw all visible spans -----
         foreach (var span in spans)
         {
             if (span.endSample   < leftBound)  continue; // fully left of view
@@ -98,11 +120,12 @@ public class KnobPathRenderer : MaskableGraphic
                 float x = SampleToX(sample);
                 float y = NormToY(span.targetAtSample(sample));
 
-                AddQuad(vh, prevX, prevY, x, y, thickness, col);
+                AddQuad(vh, prevX, prevY, x, y, thicknessNow, col);
                 prevX = x; prevY = y;
             }
         }
     }
+
 
     // Build a thin quad between (x0,y0)->(x1,y1)
     void AddQuad(VertexHelper vh, float x0, float y0, float x1, float y1, float thick, Color32 col)

@@ -396,6 +396,7 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
 
     async Task CoConfirmAsync()
     {
+        if (transitioning) return;
         transitioning = true;
 
         // stop preview & swallow inputs
@@ -406,28 +407,15 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         repeatDir = 0;
         queuedSteps = 0;
 
-        // Show decision overlay immediately
+        // (Optional) show a quick overlay while we fade out
         if (decisionOverlay) decisionOverlay.SetActive(true);
 
-        // Optional delay before the fade starts
-        if (fadeStartDelay > 0f)
-            await Task.Delay(TimeSpan.FromSeconds(fadeStartDelay));
+        // hand off to the centralized flow (it handles fade + scene swap)
+        var song = Current;                // your currently centered selection
+        await SceneFlow.GoToRhythmFromSongSelectAsync(song);
 
-        // Force the global fade overlay active and fade to black
-        if (Fade.Instance != null)
-        {
-            var go = Fade.Instance.gameObject;
-            if (!go.activeInHierarchy) go.SetActive(true);
-            await Fade.Instance.Out(fadeToBlackDuration); // async Task API in your Fade class
-        }
-
-        // Hold on black
-        if (blackHoldSeconds > 0f)
-            await Task.Delay(TimeSpan.FromSeconds(blackHoldSeconds));
-
-        // Load gameplay
-        if (!string.IsNullOrEmpty(gameplaySceneName))
-            SceneManager.LoadScene(gameplaySceneName);
+        // nothing after this runs until we’re back in a front-end scene
+        transitioning = false;
     }
 
     public void OnBack()

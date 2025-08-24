@@ -58,6 +58,24 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "KnobPointer",
+                    "type": "Value",
+                    "id": "3d2732f3-8802-4db8-ac55-4314c2dddaff",
+                    "expectedControlType": "Vector2",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": true
+                },
+                {
+                    "name": "KnobPointerPress",
+                    "type": "Button",
+                    "id": "7dac604d-5ecb-4798-8e1c-d6164c99eeef",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -162,17 +180,6 @@
                 },
                 {
                     "name": "",
-                    "id": "4a03936e-ed6d-4ae4-bfe2-a4802fd5c744",
-                    "path": "<Mouse>/position",
-                    "interactions": "",
-                    "processors": "",
-                    "groups": "",
-                    "action": "LeftStick",
-                    "isComposite": false,
-                    "isPartOfComposite": false
-                },
-                {
-                    "name": "",
                     "id": "0c5d901d-a072-4143-b75f-e8a0cfccc277",
                     "path": "<Gamepad>/start",
                     "interactions": "",
@@ -190,6 +197,28 @@
                     "processors": "",
                     "groups": "",
                     "action": "Start",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "1e681c16-ab4e-4d1b-9a9b-0acc865edd1c",
+                    "path": "<Pointer>/position",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KnobPointer",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e1e0fe35-5d94-4ba7-b192-ce1e8c58a8fa",
+                    "path": "<Pointer>/press",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "KnobPointerPress",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

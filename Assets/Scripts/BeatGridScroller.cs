@@ -22,7 +22,7 @@ public class BeatGridScroller : MonoBehaviour
     [SerializeField] RectTransform hitLine;     // assign same HitLine
     private RawImage raw;
     private float tilesAcross;
-
+    float outroClock;
     void Awake()
     {
         // Lazy init also happens inside Recompute in case this runs first in Editor
@@ -85,12 +85,23 @@ public class BeatGridScroller : MonoBehaviour
     void LateUpdate()
     {
         if (conductor == null || raw == null) return;
-        float seconds = conductor.NowForVisual / (float)conductor.SampleRate; // was NowSample
-        float beats   = seconds * (bpm / 60f);
-        float tileOffset = (beats + phaseBeats) / Mathf.Max(0.0001f, beatsPerTile);
+
+        // base seconds from conductor (frozen once finished)
+        float baseSeconds = conductor.NowForVisual / (float)conductor.SampleRate;
+
+        // when finished, run our own little clock so the grid keeps sliding
+        if (conductor.IsFinished)
+            outroClock += Time.unscaledDeltaTime;
+        else
+            outroClock = 0f;
+
+        float seconds = baseSeconds + outroClock;
+
+        float beats = seconds * (bpm / 60f);
+        float tiles = (beats + phaseBeats) / Mathf.Max(0.0001f, beatsPerTile);
 
         var uv = raw.uvRect;
-        uv.x = rightToLeft ? +tileOffset : -tileOffset;
+        uv.x = rightToLeft ? +tiles : -tiles;
         raw.uvRect = uv;
     }
 }

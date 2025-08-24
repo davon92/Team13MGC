@@ -468,10 +468,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 691875389960722271}
     m_Modifications:
-    - target: {fileID: 2532729502418932819, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 4386646269183275181, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -552,14 +548,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 6180576015623581682, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6698807873780418206, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 7962384295494366321, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
       propertyPath: screens
       value: 
@@ -568,10 +556,7 @@ PrefabInstance:
       propertyPath: m_Name
       value: Screen_Settings
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 2899064267287542053, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
-    - {fileID: 1223469885477005728, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
-    - {fileID: 3199114708215599248, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -971,14 +956,6 @@ PrefabInstance:
       propertyPath: screens
       value: 
       objectReference: {fileID: 578269466}
-    - target: {fileID: 1868343079015534953, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2538380894617020922, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5947133811008804336, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1059,9 +1036,7 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 2328924310780055341, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
-    - {fileID: 8726098629358016518, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []
@@ -1200,14 +1175,6 @@ PrefabInstance:
       propertyPath: screens
       value: 
       objectReference: {fileID: 578269466}
-    - target: {fileID: 953912739568724997, guid: 617d41076df47cd4cbef127fffe13747, type: 3}
-      propertyPath: sfxMove
-      value: 
-      objectReference: {fileID: 8300000, guid: d6da39f2688c5f240b7b03ad677b4f86, type: 3}
-    - target: {fileID: 2510584445418164370, guid: 617d41076df47cd4cbef127fffe13747, type: 3}
-      propertyPath: m_PlayOnAwake
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 2751898190768106691, guid: 617d41076df47cd4cbef127fffe13747, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1635,14 +1602,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 691875389960722271}
     m_Modifications:
-    - target: {fileID: 324358969784532305, guid: 29fcb243143849344aab7997fec99882, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 757907182453210075, guid: 29fcb243143849344aab7997fec99882, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 1712785196438918399, guid: 29fcb243143849344aab7997fec99882, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -1723,37 +1682,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 2865389789044356518, guid: 29fcb243143849344aab7997fec99882, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5415922342566067443, guid: 29fcb243143849344aab7997fec99882, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 5801616628791885372, guid: 29fcb243143849344aab7997fec99882, type: 3}
       propertyPath: m_Name
       value: Screen_Title
-      objectReference: {fileID: 0}
-    - target: {fileID: 6970143895146771264, guid: 29fcb243143849344aab7997fec99882, type: 3}
-      propertyPath: m_Transition
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8169125035160313273, guid: 29fcb243143849344aab7997fec99882, type: 3}
       propertyPath: screens
       value: 
       objectReference: {fileID: 578269466}
-    - target: {fileID: 8980389174808060172, guid: 29fcb243143849344aab7997fec99882, type: 3}
-      propertyPath: m_Transition
-      value: 0
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 6638656790833884177, guid: 29fcb243143849344aab7997fec99882, type: 3}
-    - {fileID: 5327124977005948986, guid: 29fcb243143849344aab7997fec99882, type: 3}
-    - {fileID: 4020088683570087938, guid: 29fcb243143849344aab7997fec99882, type: 3}
-    - {fileID: 6393237713884927039, guid: 29fcb243143849344aab7997fec99882, type: 3}
-    - {fileID: 196314742913038841, guid: 29fcb243143849344aab7997fec99882, type: 3}
-    - {fileID: 348042672369639607, guid: 29fcb243143849344aab7997fec99882, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

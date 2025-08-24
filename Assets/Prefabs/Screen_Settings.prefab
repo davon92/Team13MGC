@@ -1647,7 +1647,6 @@ GameObject:
   - component: {fileID: 1490687861129068376}
   - component: {fileID: 3438245289444970474}
   - component: {fileID: 2532729502418932819}
-  - component: {fileID: 2899064267287542053}
   - component: {fileID: 5936460459159746695}
   m_Layer: 0
   m_Name: AudioButton
@@ -1734,7 +1733,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 6698807873780418206}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 3926085115146554278}
-  m_Transition: 3
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0, a: 1}
@@ -1759,28 +1758,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!95 &2899064267287542053
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1778388986263139877}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 66aeb6c71d5d0d54296409c756d9c2d6, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &5936460459159746695
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2397,7 +2374,6 @@ GameObject:
   - component: {fileID: 7676958320921683977}
   - component: {fileID: 8644440866325418366}
   - component: {fileID: 6180576015623581682}
-  - component: {fileID: 1223469885477005728}
   - component: {fileID: 2653587897279154140}
   m_Layer: 0
   m_Name: GraphicsButton
@@ -2484,7 +2460,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 2532729502418932819}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 7965856167934917421}
-  m_Transition: 3
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0, a: 1}
@@ -2509,28 +2485,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!95 &1223469885477005728
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2395851160894595920}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 00628e4df921668428e42ea0c36e213e, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &2653587897279154140
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5555,7 +5509,6 @@ GameObject:
   - component: {fileID: 4657249088807727027}
   - component: {fileID: 1992854365268057184}
   - component: {fileID: 6698807873780418206}
-  - component: {fileID: 3199114708215599248}
   - component: {fileID: 732032307894992050}
   m_Layer: 0
   m_Name: GameplayButton
@@ -5642,7 +5595,7 @@ MonoBehaviour:
     m_SelectOnDown: {fileID: 6180576015623581682}
     m_SelectOnLeft: {fileID: 0}
     m_SelectOnRight: {fileID: 7984407933030841097}
-  m_Transition: 3
+  m_Transition: 0
   m_Colors:
     m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
     m_HighlightedColor: {r: 1, g: 0, b: 0, a: 1}
@@ -5667,28 +5620,6 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!95 &3199114708215599248
-Animator:
-  serializedVersion: 7
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6669000858688461892}
-  m_Enabled: 1
-  m_Avatar: {fileID: 0}
-  m_Controller: {fileID: 9100000, guid: 18f7d546c4e77d544a337d900b507c4f, type: 2}
-  m_CullingMode: 0
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_StabilizeFeet: 0
-  m_AnimatePhysics: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorStateOnDisable: 0
-  m_WriteDefaultValuesOnDisable: 0
 --- !u!114 &732032307894992050
 MonoBehaviour:
   m_ObjectHideFlags: 0

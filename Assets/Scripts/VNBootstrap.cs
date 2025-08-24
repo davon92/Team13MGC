@@ -8,6 +8,12 @@ public class VNBootstrap : MonoBehaviour
     async void Start()
     {
         string nodeToStart = null;
+        
+        if (!string.IsNullOrEmpty(SceneFlow.PendingVNStartNode))
+        {
+            nodeToStart = SceneFlow.PendingVNStartNode;
+            SceneFlow.PendingVNStartNode = null;
+        }
 
         if (SaveSystem.PendingLoadSlot != null)
         {

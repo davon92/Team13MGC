@@ -24,6 +24,7 @@ public class SaveSlotsScreen : MonoBehaviour, IUIScreen
     [SerializeField] SaveSlotView itemPrefab;
     [SerializeField] RectTransform content;
     [SerializeField, Range(2, 12)] int slotsShown = SaveSystem.MaxSlots;
+    [SerializeField] AutoSavePanel autoPanel;
 
     public string ScreenId => MenuIds.SaveLoad;
     public GameObject Root => root != null ? root : gameObject;
@@ -45,39 +46,57 @@ public class SaveSlotsScreen : MonoBehaviour, IUIScreen
         BuildIfNeeded();
         RefreshAll(a?.fallbackChapterId ?? "Prologue");
 
-        // Decide what should be selected when the screen is active
         GameObject candidate = null;
 
-        // Prefer the first visible slot's Button (if any)
-        var firstSlotBtn = content != null
-            ? content.GetComponentInChildren<Button>(includeInactive: false)
-            : null;
+        // Prefer autosave card if loading and it exists
+        var auto = autoPanel ? SaveSystem.LoadFromSlot(SaveSystem.AutoSlot) : null;
+        if (_mode == Mode.Load && auto != null && autoPanel)
+            candidate = autoPanel.FirstSelectable;
 
-        if (firstSlotBtn != null && firstSlotBtn.interactable)
-            candidate = firstSlotBtn.gameObject;
-        else if (backButton != null && backButton.interactable)
-            candidate = backButton.gameObject;
-        else if (firstSelected != null)
-            candidate = firstSelected; // inspector fallback
+        // Else first manual slot
+        if (candidate == null)
+        {
+            var firstSlotBtn = content ? content.GetComponentInChildren<Button>(false) : null;
+            if (firstSlotBtn && firstSlotBtn.interactable) candidate = firstSlotBtn.gameObject;
+        }
 
-        // Expose to ScreenController (it will select this after fade-in)
+        if (candidate == null && backButton && backButton.interactable) candidate = backButton.gameObject;
+        if (candidate == null && firstSelected) candidate = firstSelected;
+
         firstSelected = candidate;
-
-        // Optional: select immediately (do this at most once)
-        if (EventSystem.current != null && firstSelected != null)
+        if (EventSystem.current && firstSelected)
             EventSystem.current.SetSelectedGameObject(firstSelected);
+        
+        var grp = Root.GetComponentInChildren<UISelectScalerGroup>(true);
+        if (grp) grp.SyncNow(instant: true);
+        
     }
 
+    void WireVerticalNav()
+    {
+        var btns = content.GetComponentsInChildren<Button>(includeInactive: false);
+        for (int i = 0; i < btns.Length; i++)
+        {
+            var nav = btns[i].navigation;
+            nav.mode = Navigation.Mode.Explicit;
+            nav.selectOnUp   = i > 0 ? btns[i - 1] : null;
+            nav.selectOnDown = i < btns.Length - 1 ? btns[i + 1] : null;
+            btns[i].navigation = nav;
+        }
+    }
 
     public void OnHide() { }
 
     void BuildIfNeeded()
     {
         if (_views.Count > 0) return;
-        for (int i = 0; i < slotsShown; i++)
+
+        int manualCount = Mathf.Clamp(slotsShown, 1, SaveSystem.MaxSlots - 1);
+        for (int i = 0; i < manualCount; i++)
         {
             var v = Instantiate(itemPrefab, content);
-            v.Init(this, i);
+            int slot = i + 1;              // 1..(MaxSlots-1)  ← no slot 0 here
+            v.Init(this, slot);
             _views.Add(v);
         }
     }
@@ -86,12 +105,29 @@ public class SaveSlotsScreen : MonoBehaviour, IUIScreen
     {
         for (int i = 0; i < _views.Count; i++)
         {
-            var data = SaveSystem.LoadFromSlot(i);
-            // Ensure autosave shows something sensible even if missing
-            if (i == SaveSystem.AutoSlot && data == null && SaveSystem.SlotExists(i))
-                data = SaveSystem.LoadFromSlot(i);
-
+            int slot = i + 1; // 1..N
+            var data = SaveSystem.LoadFromSlot(slot);
             _views[i].Bind(data, _mode);
+        }
+
+        // Bind autosave panel at the end (optional)
+        if (autoPanel)
+        {
+            var auto = SaveSystem.LoadFromSlot(SaveSystem.AutoSlot);
+            autoPanel.Bind(auto);
+            autoPanel.ConfigureForMode(_mode);
+
+            var btn = autoPanel.GetComponentInChildren<Button>(true);
+            if (btn)
+            {
+                btn.onClick.RemoveAllListeners();
+                btn.onClick.AddListener(async () =>
+                {
+                    if (_mode != Mode.Load || auto == null) return;
+                    SaveSystem.QueueLoadSlot(SaveSystem.AutoSlot);
+                    await SceneFlow.LoadVNAsync(false);
+                });
+            }
         }
     }
 

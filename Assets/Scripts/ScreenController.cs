@@ -145,7 +145,7 @@ public class ScreenController : MonoBehaviour
 
     public void Pop()
     {
-        if (stack.Count <= 1) return;
+        if (stack.Count == 0) return;
         StopAllCoroutines();
         StartCoroutine(CoPop());
     }
@@ -217,34 +217,41 @@ public class ScreenController : MonoBehaviour
     
     private IEnumerator CoPop()
     {
-        BeginTransition();
-        try
+        // Nothing to pop
+        if (stack.Count == 0) yield break;
+
+        // 1) Fade out + remove the current top
+        var top = stack.Pop();
+        yield return CoFadeOut(top);
+        top.OnHide();
+        top.Root.SetActive(false);
+
+        // 2) If there is another screen underneath, bring it back
+        if (stack.Count > 0)
         {
-            if (stack.Count <= 1) yield break;
-
-            var top = stack.Pop();
-            yield return CoFadeOut(top);
-            top.OnHide();
-            top.Root.SetActive(false);
-
             var back = stack.Peek();
             back.Root.SetActive(true);
             back.OnShow(null);
             yield return CoFadeIn(back);
 
+            // restore selection
             if (EventSystem.current != null)
             {
                 GameObject toSelect = null;
-                if (_lastSelectedByScreen.TryGetValue(back.ScreenId, out var remembered)
-                    && IsDescendantOf(remembered, back.Root) && IsValidSelectable(remembered))
+                if (_lastSelectedByScreen.TryGetValue(back.ScreenId, out var remembered) &&
+                    IsDescendantOf(remembered, back.Root) && IsValidSelectable(remembered))
                     toSelect = remembered;
                 else
                     toSelect = back.FirstSelected;
 
                 SafeSelect(toSelect);
             }
+            yield break;
         }
-        finally { EndTransition(); }
+
+        // 3) Otherwise we popped the last screen; clear UI selection so gameplay resumes
+        if (EventSystem.current != null)
+            EventSystem.current.SetSelectedGameObject(null);
     }
     
     private IEnumerator CoHideTop()

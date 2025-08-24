@@ -27,14 +27,41 @@ public class NoteObject : MonoBehaviour
 
     // --- simple pool ---
     static readonly Stack<NoteObject> pool = new();
+    static void ResetStaticPool() => pool.Clear();
     public static NoteObject Get(NoteObject prefab, Transform parent)
     {
-        var obj = pool.Count > 0 ? pool.Pop() : Instantiate(prefab, parent);
-        obj.gameObject.SetActive(true);
-        obj.Judged = false; obj.Offscreen = false;
-        return obj;
+        NoteObject n = null;
+
+        // Pop until we find a still-alive instance (skip destroyed/null)
+        while (pool.Count > 0 && !n)
+            n = pool.Pop();
+
+        if (!n)
+        {
+            // Instantiate a fresh one from the prefab
+            n = Instantiate(prefab, parent);
+        }
+        else
+        {
+            // Re-parent and reactivate a pooled one
+            n.transform.SetParent(parent, false);
+            n.gameObject.SetActive(true);
+        }
+
+        // Reset per-note flags/state here if you keep any
+        n.Offscreen = false;
+        n.Judged    = false;
+        // n.ResetVisuals(); // (optional) whatever you need
+
+        return n;
     }
-    public void Recycle() { gameObject.SetActive(false); pool.Push(this); }
+    public void Recycle()
+    {
+        if (!this) return;                    // already destroyed
+        gameObject.SetActive(false);
+        transform.SetParent(null, false);
+        pool.Push(this);
+    }
 
     public void Activate(RhythmTypes.ButtonNote data, int spawnSample, int hitSample)
     {

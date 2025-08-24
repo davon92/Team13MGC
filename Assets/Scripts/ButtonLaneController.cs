@@ -93,7 +93,18 @@ public class ButtonLaneController : MonoBehaviour
 
     void Update()
     {
-        int nowV = conductor.NowForVisual;  // was NowSample
+        int nowV = conductor.NowForVisual;
+
+        if (conductor.IsFinished)  // no spawns, let existing notes slide off
+        {
+            for (int i = active.Count - 1; i >= 0; --i)
+            {
+                var n = active[i];
+                n.UpdatePosition(nowV, spawnX, hitX, Stravel, despawnX);
+                if (n.Offscreen) Recycle(i);
+            }
+            return;
+        }
 
         while (upcoming.Count > 0 && upcoming.Peek().startSample <= nowV + Stravel)
         {
@@ -110,9 +121,9 @@ public class ButtonLaneController : MonoBehaviour
             int nowH = conductor.NowForHit; // judge on input timeline
             if (!n.Judged && nowH > n.Data.startSample + goodSamples)
             {
-                n.Miss();
+                n.Miss();                       // mark judged, but keep it visible
                 OnJudged?.Invoke(Judgement.Miss);
-                active.RemoveAt(i);
+                // do NOT remove here; let it slide and recycle when Offscreen
             }
             else if (n.Offscreen)
             {
@@ -172,5 +183,14 @@ public class ButtonLaneController : MonoBehaviour
     {
         active[i].Recycle();
         active.RemoveAt(i);
+    }
+    
+    public void ClearAll()
+    {
+        // Despawn any active notes
+        for (int i = active.Count - 1; i >= 0; --i)
+            Recycle(i);
+
+        upcoming.Clear();
     }
 }

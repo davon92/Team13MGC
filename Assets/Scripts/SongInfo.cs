@@ -1,4 +1,5 @@
 using UnityEngine;
+using SonicBloom.Koreo;   // Koreography
 
 [CreateAssetMenu(menuName = "Songs/Song Info")]
 public class SongInfo : ScriptableObject
@@ -8,11 +9,26 @@ public class SongInfo : ScriptableObject
     public string artist;
     public Sprite jacket;
 
-    [Header("Audio / Timing")]
+    [Header("Audio / Chart")]
+    [Tooltip("Koreographer chart that defines all timing/event tracks.")]
+    public Koreography koreography;
+
+    [Tooltip("Music clip to play. If empty, uses koreography.SourceClip.")]
+    public AudioClip musicClip;
+
+    [Tooltip("Koreography Track ID for face buttons (int payload 0..3).")]
+    public string buttonsEventID = "Buttons";
+
+    [Tooltip("Koreography Track ID for knob (curve/float payload).")]
+    public string knobEventID = "Knob";
+
+    [Header("Preview (Song Select)")]
     public AudioClip previewClip;
     [Tooltip("Seconds into the clip to start the preview.")] public float previewStart = 0f;
     [Tooltip("Loop back here if previewEnd <= 0.")] public float previewLoop = 0f;
     [Tooltip("0 = loop to previewLoop. >0 = stop preview here.")] public float previewEnd = 0f;
+
+    [Header("Timing Metadata")]
     public float bpm = 120f;
 
     [Header("DDR Radar (0..1)")]
@@ -20,5 +36,7 @@ public class SongInfo : ScriptableObject
     [Range(0,1)] public float voltage;
     [Range(0,1)] public float freeze;
     [Range(0,1)] public float chaos;
-    [Range(0,1)] public float air;   // ok to keep even if you don’t show jumps yet
+    [Range(0,1)] public float air;
+
+    public AudioClip Music => musicClip ? musicClip : koreography != null ? koreography.SourceClip : null;
 }

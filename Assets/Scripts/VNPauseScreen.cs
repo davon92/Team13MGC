@@ -49,6 +49,6 @@ public class VNPauseScreen : MonoBehaviour, IUIScreen
         bool yes = await ModalHub.I.Confirm.ShowAsync("Return to the main menu? Unsaved progress will be lost." );
         if (!yes) return;
 
-        await SceneFlow.BackToFrontEndAsync();
+        await SceneFlow.LoadFrontEndAsync();
     }
 }

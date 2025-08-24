@@ -5,6 +5,20 @@ using Yarn.Unity;
 /// <<sfx "Select">>, <<bg "Cafe">>, <<go_to_rhythm "songId">>, <<pause_menu>>
 public class VNYarnCommands : MonoBehaviour
 {
+    [SerializeField] SongDatabase songDb;
+    
+    SongInfo Find(string id)
+    {
+        if (!songDb || songDb.songs == null) return null;
+        foreach (var s in songDb.songs) {
+            if (!s) continue;
+            if (string.Equals(s.name,  id, System.StringComparison.OrdinalIgnoreCase)) return s;
+            if (string.Equals(s.title, id, System.StringComparison.OrdinalIgnoreCase)) return s;
+        }
+        return null;
+    }
+
+    
     [YarnCommand("sfx")]
     public void PlaySfx(string clipName)
     {
@@ -20,13 +34,20 @@ public class VNYarnCommands : MonoBehaviour
         Debug.Log($"[Yarn] BG → {bgId}");
     }
 
+    // <<go_to_rhythm "songId" "ReturnNode">>
     [YarnCommand("go_to_rhythm")]
-    public void GoToRhythm(string songId = "")
+    public void GoToRhythm(string songId, string returnNode = null)
     {
-        // You already have SceneFlow; call the rhythm path you prefer.
-        // Example:
-        // SceneFlow.LoadRhythmAsync(songId).Forget();
-        Debug.Log($"[Yarn] → Rhythm with song '{songId}'");
+        var song = Find(songId);
+        if (!song) { Debug.LogError($"[Yarn] Song id '{songId}' not found."); return; }
+        _ = SceneFlow.GoToRhythmFromVNAsync(song, returnNode);
+    }
+
+    // Optional helper: <<resume "NodeName">>
+    [YarnCommand("resume")]
+    public void Resume(string nodeName)
+    {
+        SceneFlow.PendingVNStartNode = nodeName;
     }
 
     [YarnCommand("pause_menu")]

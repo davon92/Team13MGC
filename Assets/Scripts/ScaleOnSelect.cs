@@ -45,8 +45,24 @@ public class ScaleOnSelect : MonoBehaviour, ISelectHandler, IDeselectHandler, IP
     public void OnSelect(BaseEventData _)  => Apply(true,  false);
     public void OnDeselect(BaseEventData _) => Apply(false, false);
 
-    public void OnPointerEnter(PointerEventData _) { if (hoverActsLikeSelect) Apply(true,  false); }
-    public void OnPointerExit (PointerEventData _) { if (hoverActsLikeSelect) Apply(false, false); }
+    public void OnPointerEnter(PointerEventData _)
+    {
+        if (!hoverActsLikeSelect) return;
+
+        // Make this the selected object; OnSelect will drive the grow animation.
+        if (EventSystem.current &&
+            EventSystem.current.currentSelectedGameObject != gameObject)
+        {
+            EventSystem.current.SetSelectedGameObject(gameObject);
+        }
+    }
+
+    public void OnPointerExit(PointerEventData _)
+    {
+        if (!hoverActsLikeSelect) return;
+        // Do nothing. If this is still selected, keep it grown.
+        // When selection actually moves elsewhere, OnDeselect will shrink it.
+    }
 
     // === Core ===
     void Apply(bool selected, bool instant)
