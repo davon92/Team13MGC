@@ -9,10 +9,11 @@ public class KnobLaneController : MonoBehaviour
 {
     [SerializeField] RhythmConductor conductor;
     [SerializeField] float angularDeadzoneDeg = 2f;
+
     [Header("Lane visuals")]
     [SerializeField] RectTransform stickParent;   // vertical lane rect (for target/player dots)
     [SerializeField] RectTransform targetDot;
-    [SerializeField] RectTransform playerDot;
+    [SerializeField] public RectTransform playerDot;
 
     [Header("Rotary surface (mouse)")]
     [Tooltip("Area (usually a circular UI) used to measure mouse angle around its center.")]
@@ -36,7 +37,7 @@ public class KnobLaneController : MonoBehaviour
     [SerializeField] float perfectErr = 0.06f;
     [SerializeField] float greatErr   = 0.12f;
     [SerializeField] float goodErr    = 0.18f;
-    
+
     [Header("Forgiveness")]
     [SerializeField, Tooltip("Multiply all windows. 1 = unchanged.")]
     float generosity = 1.35f;                // try 1.25–1.6
@@ -50,7 +51,7 @@ public class KnobLaneController : MonoBehaviour
     [Header("Grace (milliseconds)")]
     [SerializeField] float enterGraceMs = 60f;
     [SerializeField] float exitGraceMs  = 80f;
-    
+
     public float GoodWindow => Mathf.Min(1f, goodErr * generosity + Add01());
 
     // Actions (instance-bound)
@@ -72,7 +73,7 @@ public class KnobLaneController : MonoBehaviour
     readonly Queue<RhythmTypes.KnobSpan> spans = new();
     RhythmTypes.KnobSpan? active;
     float sumScore, maxScore;
-    
+
     float Add01()
     {
         if (!haveLane) return 0f;
@@ -81,7 +82,7 @@ public class KnobLaneController : MonoBehaviour
         if (toleranceFrom) px = Mathf.Max(px, toleranceFrom.rect.height * 0.5f);
         return Mathf.Clamp01(px / h);
     }
-    
+
     // Returns absolute error (0..1) at the *visual* time; false if no active span.
     public bool TryGetVisualError(out float err)
     {
@@ -91,12 +92,12 @@ public class KnobLaneController : MonoBehaviour
         err = Mathf.Abs(target01V - player01);
         return true;
     }
-    
+
     public void SetTurnsForFullTravel(float turns)
     {
         turnsForFullTravel = Mathf.Max(0.05f, turns);
     }
-    
+
     void Awake()
     {
         if (!playerInput) playerInput = FindFirstObjectByType<PlayerInput>();
@@ -149,7 +150,7 @@ public class KnobLaneController : MonoBehaviour
             DrawPlayer(player01);
             return;
         }
-        
+
         // 1) Read rotary delta (turns): + = clockwise, − = counter-clockwise
         float deltaTurns = ReadRotaryTurnsThisFrame();
 
@@ -270,7 +271,7 @@ public class KnobLaneController : MonoBehaviour
 
         return turns;
     }
-    
+
     public void ClearAll()
     {
         spans.Clear();
