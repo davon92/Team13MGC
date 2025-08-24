@@ -73,6 +73,8 @@ public class KnobLaneController : MonoBehaviour
     readonly Queue<RhythmTypes.KnobSpan> spans = new();
     RhythmTypes.KnobSpan? active;
     float sumScore, maxScore;
+    
+    bool headJudged = false;
 
     float Add01()
     {
@@ -98,6 +100,14 @@ public class KnobLaneController : MonoBehaviour
         turnsForFullTravel = Mathf.Max(0.05f, turns);
     }
 
+    Judgement GradeByError(float absErr)
+    {
+        if (absErr <= perfectErr) return Judgement.Perfect;
+        if (absErr <= greatErr)   return Judgement.Great;
+        if (absErr <= goodErr)    return Judgement.Good;
+        return Judgement.Miss;
+    }
+    
     void Awake()
     {
         if (!playerInput) playerInput = FindFirstObjectByType<PlayerInput>();
@@ -166,6 +176,7 @@ public class KnobLaneController : MonoBehaviour
         {
             active = spans.Dequeue();
             sumScore = 0f; maxScore = 0f;
+            headJudged = false;                          // <-- add this
             if (targetDot) targetDot.gameObject.SetActive(true);
         }
 
@@ -179,13 +190,25 @@ public class KnobLaneController : MonoBehaviour
         var s = active.Value;
         int nowH = conductor.NowForHit;
 
-        // End-of-span + grace → finalize judgement
-        if (nowH > s.endSample + exitGraceSamples)
+        if (!headJudged && nowH >= s.startSample - enterGraceSamples)
         {
-            FinalizeSpan(sumScore, maxScore);
-            active = null;
-            if (targetDot) targetDot.gameObject.SetActive(false);
-            return;
+            // Measure instantaneous error on the HIT timeline
+            float target01H = Mathf.Clamp01(s.targetAtSample(nowH));
+            float err = Mathf.Abs(target01H - player01);
+
+            // Use the same forgiveness you use for ticks
+            float add = Add01();
+            float pWin = Mathf.Min(1f, perfectErr * generosity + add);
+            float gWin = Mathf.Min(1f, greatErr   * generosity + add);
+            float bWin = Mathf.Min(1f, goodErr    * generosity + add);
+
+            Judgement j = (err <= pWin) ? Judgement.Perfect
+                : (err <= gWin) ? Judgement.Great
+                : (err <= bWin) ? Judgement.Good
+                : Judgement.Miss;
+
+            OnJudged?.Invoke(j);
+            headJudged = true; // lock so we only judge once at the head
         }
 
         // Draw target & player
@@ -211,6 +234,17 @@ public class KnobLaneController : MonoBehaviour
 
             sumScore += tick; maxScore += 1f;
         }
+        
+        // At end + small grace: clear the span (only finalize if head never judged)
+        if (nowH > s.endSample + exitGraceSamples)
+        {
+            if (!headJudged) FinalizeSpan(sumScore, maxScore); // fallback (rare)
+            active = null;
+            headJudged = false;
+            if (targetDot) targetDot.gameObject.SetActive(false);
+            return;
+        }
+
     }
 
     // ----- Rotary math -----

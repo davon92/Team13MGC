@@ -32,7 +32,7 @@ public class ButtonLaneController : MonoBehaviour
 
     void OnEnable()
     {
-        // Subscribe + Enable here (paired with OnDisable)
+        // Subscribe and Enable here (paired with OnDisable)
         btnA.performed += OnA; btnA.Enable();
         btnY.performed += OnY; btnY.Enable();
         btnB.performed += OnB; btnB.Enable();
@@ -67,7 +67,7 @@ public class ButtonLaneController : MonoBehaviour
         float leftX  = parent.InverseTransformPoint(leftWorld).x;
         float rightX = parent.InverseTransformPoint(rightWorld).x;
 
-        // hit line center in parent's local space
+        // hit the line center in parent's local space
         float hitCenterX = parent.InverseTransformPoint(hitLine.position).x;
 
         hitX     = hitCenterX;
@@ -93,51 +93,71 @@ public class ButtonLaneController : MonoBehaviour
 
     void Update()
     {
-        int nowV = conductor.NowForVisual;
+        int nowV = conductor.NowForVisual;  // for motion
+        int nowH = conductor.NowForHit;     // for judging
 
-        if (conductor.IsFinished)  // no spawns, let existing notes slide off
+        // If the song is finished: don't spawn anything new,
+        // just move what's alive offscreen.
+        if (conductor.IsFinished)
         {
             for (int i = active.Count - 1; i >= 0; --i)
             {
                 var n = active[i];
-                n.UpdatePosition(nowV, spawnX, hitX, Stravel, despawnX);
+                n.UpdatePosition(nowV, spawnX, noteSpeedPxPerSec, conductor.SampleRate, despawnX);
                 if (n.Offscreen) Recycle(i);
             }
             return;
         }
 
+        // Spawn as notes enter the travel window.
         while (upcoming.Count > 0 && upcoming.Peek().startSample <= nowV + Stravel)
         {
-            var n = upcoming.Dequeue();
-            var no = Spawn(n);
+            var data = upcoming.Dequeue();
+            var no = Spawn(data);
             active.Add(no);
         }
 
+        // Move + judge
         for (int i = active.Count - 1; i >= 0; --i)
         {
             var n = active[i];
-            n.UpdatePosition(nowV, spawnX, hitX, Stravel, despawnX);
 
-            int nowH = conductor.NowForHit; // judge on input timeline
-            if (!n.Judged && nowH > n.Data.startSample + goodSamples)
+            // motion (visual timeline)
+            n.UpdatePosition(nowV, spawnX, noteSpeedPxPerSec, conductor.SampleRate, despawnX);
+
+            if (!n.Judged)
             {
-                n.Miss();                       // mark judged, but keep it visible
-                OnJudged?.Invoke(Judgement.Miss);
-                // do NOT remove here; let it slide and recycle when Offscreen
+                // 1) Immediately DIM once the note is late (crossed the line).
+                if (nowH >= n.Data.startSample && !n.Dimmed)
+                    n.ApplyDimLook();
+
+                // 2) Commit a MISS when the late window fully expires.
+                if (nowH > n.Data.startSample + goodSamples)
+                {
+                    n.Miss();                     // darkens instantly (Miss() now does that)
+                    OnJudged?.Invoke(Judgement.Miss);
+                }
             }
-            else if (n.Offscreen)
-            {
-                Recycle(i);
-            }
+
+            // Recycle only when truly off the left edge.
+            if (n.Offscreen) Recycle(i);
         }
     }
+
 
     NoteObject Spawn(RhythmTypes.ButtonNote data)
     {
         var no = NoteObject.Get(notePrefab, noteParent);
-        int spawnSample = data.startSample - Stravel;        // ← correct spawn time
+
+        // travel = time (in samples) from spawn to hit your configured speed.
+        int spawnSample = data.startSample - Stravel;
+
         no.Activate(data, spawnSample, data.startSample);
-        no.SetStyleForButton(data.button);
+        no.UpdatePosition(conductor.NowSample, spawnX, noteSpeedPxPerSec, conductor.SampleRate, despawnX);
+        
+        if (no.Offscreen) no.Recycle();
+        
+        no.SetStyleForButton(data.button); // if you have per-button coloring
         return no;
     }
 
@@ -149,33 +169,27 @@ public class ButtonLaneController : MonoBehaviour
 
     void TryHit(RhythmTypes.FaceButton button)
     {
-        int nowH = conductor.NowForHit;     // was NowSample
+        int nowH = conductor.NowForHit;
 
         NoteObject best = null; int bestAbs = int.MaxValue;
         for (int i = 0; i < active.Count; ++i)
         {
             var n = active[i];
             if (n.Judged || n.Data.button != button) continue;
-            int d = Mathf.Abs(nowH - n.Data.startSample); // compare with HIT time
+            int d = Mathf.Abs(nowH - n.Data.startSample);
             if (d < bestAbs) { bestAbs = d; best = n; }
         }
-
-        // Debug: show how close you are even if outside the window
-        float toMs = 1000f / conductor.SampleRate;
-        if (best != null) Debug.Log($"[{button}] nearest Δ = {bestAbs} samples ({bestAbs*toMs:0.0}ms). Window Good={goodSamples} samples.");
-
         if (best == null || bestAbs > goodSamples) return;
 
-        Judgement j;
-        if      (bestAbs <= perfectSamples) j = Judgement.Perfect;
-        else if (bestAbs <= greatSamples)   j = Judgement.Great;
-        else                                j = Judgement.Good;
-        
-        OnJudged?.Invoke(j);
+        Judgement j =
+            (bestAbs <= perfectSamples) ? Judgement.Perfect :
+            (bestAbs <= greatSamples)   ? Judgement.Great   :
+            Judgement.Good;
 
-        Debug.Log($"{j} (Δ {bestAbs} samples, {bestAbs*toMs:0.0}ms)");
+        OnJudged?.Invoke(j);
         best.Hit(j);
         active.Remove(best);
+        best.Recycle(); // hits vanish immediately; missed notes slide out
     }
 
 
