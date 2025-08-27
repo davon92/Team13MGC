@@ -7,6 +7,8 @@ public class RhythmEntryPoint : MonoBehaviour
     [Header("Scene Wiring")]
     [SerializeField] KoreographyChartLoader chartLoader;
     [SerializeField] RhythmConductor        conductor;
+    public ButtonLaneController buttons;
+    public KnobLaneController   knob;
     [SerializeField] AudioSource            musicSource;
 
     [Header("Intro Sequence")]
@@ -19,6 +21,7 @@ public class RhythmEntryPoint : MonoBehaviour
     [SerializeField] float outroHoldSeconds = 3f;     // <- 3s breathe out
     [SerializeField] float fadeOutSeconds   = 0.6f;   // <- fade length
     [SerializeField] CanvasGroup fadeOverlay;         // assign your existing black overlay (alpha 0)
+    [SerializeField] ScoreTracker score;
 
     bool ending;   // prevent double-outro
 
@@ -31,6 +34,8 @@ public class RhythmEntryPoint : MonoBehaviour
 
         if (!musicSource) musicSource = FindFirstObjectByType<AudioSource>();
         if (!conductor)   conductor   = FindFirstObjectByType<RhythmConductor>();
+        if (!buttons)   buttons   = FindFirstObjectByType<ButtonLaneController>();
+        if (!knob)      knob      = FindFirstObjectByType<KnobLaneController>();
         if (!chartLoader) chartLoader = FindFirstObjectByType<KoreographyChartLoader>();
 
         if (musicSource && song.Music)
@@ -83,6 +88,8 @@ public class RhythmEntryPoint : MonoBehaviour
     {
         if (!conductor) conductor = FindFirstObjectByType<RhythmConductor>();
         if (conductor) conductor.SongFinished += HandleSongFinished;
+        if (score && buttons && knob && conductor)
+            score.Hook(buttons, knob, conductor);
     }
     void OnDisable()
     {
@@ -94,15 +101,24 @@ public class RhythmEntryPoint : MonoBehaviour
         if (ending) return;
         ending = true;
 
-        // 1) Lock conductor so Update() can't re-arm
-        conductor?.LockEnd();          // stops and sets finished=true
+        if (!score) score = FindFirstObjectByType<ScoreTracker>();
+
+        var result = score ? score.BuildResult() : new SceneFlow.RhythmResult();
+
+        var req = SceneFlow.PendingRhythm;
+        result.song   = req?.song;
+        result.origin = req?.origin ?? SceneFlow.RhythmOrigin.SongSelect;
+        result.cleared = true;
+
+        SceneFlow.SubmitRhythmResult(result);
+
+        conductor?.LockEnd();
         musicSource?.Stop();
 
-        // 2) Stop graph redraws immediately
         var path = FindFirstObjectByType<KnobPathRenderer>();
         if (path) path.enabled = false;
 
-        StartCoroutine(CoOutro());
+        StartCoroutine(CoOutro());   // your existing fade+return
     }
     
     IEnumerator CoOutro()

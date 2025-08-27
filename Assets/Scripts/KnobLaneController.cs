@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
@@ -70,6 +71,7 @@ public class KnobLaneController : MonoBehaviour
 
     // Chart spans & scoring (unchanged API)
     public System.Action<Judgement> OnJudged;
+    public Action<float, float> OnTraceSpanScored;
     readonly Queue<RhythmTypes.KnobSpan> spans = new();
     RhythmTypes.KnobSpan? active;
     float sumScore, maxScore;
@@ -233,17 +235,24 @@ public class KnobLaneController : MonoBehaviour
                 : 0f;
 
             sumScore += tick; maxScore += 1f;
+            
+            if (tick > 0f && TryGetComponent<ScoreTracker>(out var tracker))
+            {
+                tracker.KnobTraceComboPulse(true, Time.unscaledDeltaTime);
+            }
         }
         
         // At end + small grace: clear the span (only finalize if head never judged)
         if (nowH > s.endSample + exitGraceSamples)
         {
             if (!headJudged) FinalizeSpan(sumScore, maxScore); // fallback (rare)
+            OnTraceSpanScored?.Invoke(sumScore, maxScore);
             active = null;
             headJudged = false;
             if (targetDot) targetDot.gameObject.SetActive(false);
             return;
         }
+        
 
     }
 

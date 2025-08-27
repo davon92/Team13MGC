@@ -12,6 +12,7 @@ public static class SceneFlow
 
     // ---- Rhythm "travel ticket" ----
     public enum RhythmOrigin { SongSelect, VisualNovel }
+    
 
     [System.Serializable] public sealed class RhythmRequest {
         public SongInfo song;
@@ -22,15 +23,25 @@ public static class SceneFlow
             $"RhythmRequest(song={(song ? song.name : "null")}, origin={origin}, return={returnYarnNode})";
     }
 
-    [System.Serializable] public sealed class RhythmResult {
+    [System.Serializable]
+    public sealed class RhythmResult {
         public SongInfo song;
         public RhythmOrigin origin;
-        public int score;
-        public bool cleared;
+
+        public int    score;
+        public bool   cleared;     // you can set this to true/false based on a rule you like
+        public int    maxCombo;
+        public int    perfect;
+        public int    great;
+        public int    good;
+        public int    miss;
+        public string grade;       // "AAA", "AA", "A", etc.
     }
     
     public static RhythmRequest PendingRhythm { get; private set; }
-    public static RhythmResult  PendingRhythmResult { get; set; }
+    public static RhythmResult PendingRhythmResult { get; private set; }
+    public static RhythmResult LastRhythmResult    { get; private set; }
+
     public static string PendingVNStartNode { get; set; }
 
     // ---- Entry points ----
@@ -54,25 +65,24 @@ public static class SceneFlow
         float fadeOut = 0.35f,
         float fadeIn  = 0.25f)
     {
+        // put result in both places
         PendingRhythmResult = result;
+        LastRhythmResult    = result;
 
-        var req = PendingRhythm;          // consume the “ticket”
+        var req = PendingRhythm;      // consume the “ticket”
         PendingRhythm = null;
 
-        // Only fade out here if Rhythm scene didn’t already fade to black
         if (!alreadyFaded && Fade.Instance != null)
             await Fade.Instance.Out(fadeOut);
 
         if (req != null && req.origin == RhythmOrigin.SongSelect)
         {
-            // TEMP: no Results scene yet — go back to front-end menu
             var op = UnityEngine.SceneManagement.SceneManager
                 .LoadSceneAsync(FrontEndSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
             while (!op.isDone) await System.Threading.Tasks.Task.Yield();
         }
         else
         {
-            // Return to VN and optionally jump to a yarn node
             var op = UnityEngine.SceneManagement.SceneManager
                 .LoadSceneAsync(VNSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
             while (!op.isDone) await System.Threading.Tasks.Task.Yield();
@@ -86,6 +96,19 @@ public static class SceneFlow
     }
 
 
+    public static void SubmitRhythmResult(RhythmResult r)
+    {
+        PendingRhythmResult = r;
+        LastRhythmResult    = r;
+    }
+    
+    public static bool TryConsumePendingRhythmResult(out RhythmResult r)
+    {
+        r = PendingRhythmResult;
+        if (r == null) return false;
+        PendingRhythmResult = null;
+        return true;
+    }
 
     // ---- Basic loaders (fade-aware) ----
     public static async Task LoadFrontEndAsync(float fadeDuration = 0.35f)
