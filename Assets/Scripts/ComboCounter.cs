@@ -5,19 +5,21 @@ using System.Collections;
 public class ComboCounter : MonoBehaviour
 {
     [Header("Wiring")]
-    [SerializeField] ScoreTracker tracker;         // auto-finds if left empty
-    [SerializeField] TMP_Text     label;           // put your TMP text here
-    [SerializeField] RectTransform scaleTarget;    // defaults to this transform
+    [SerializeField] ScoreTracker tracker;
+    [SerializeField] TMP_Text     label;
+    [SerializeField] RectTransform scaleTarget;
 
     [Header("Behavior")]
-    [SerializeField] int   showFrom    = 2;        // show only at 2+
-    [SerializeField] float pulseScale  = 1.2f;
-    [SerializeField] float pulseUpTime = 0.10f;
+    [SerializeField] int   showFrom      = 2;        // show only at 2+
+    [SerializeField] float pulseScale    = 1.2f;
+    [SerializeField] float pulseUpTime   = 0.10f;
     [SerializeField] float pulseDownTime = 0.08f;
-    [SerializeField] Color baseColor   = Color.white;
-    [SerializeField] string suffix     = " COMBO";
+    [SerializeField] Color baseColor     = Color.white;
 
-    int lastCombo = 0;
+    [SerializeField] string suffix = " COMBO";       // -> "123 COMBO"
+    string ComboText(int v) => $"{v}{suffix}";
+
+    int       lastCombo = 0;
     Coroutine anim;
 
     void Awake()
@@ -26,10 +28,10 @@ public class ComboCounter : MonoBehaviour
         if (!label)       label       = GetComponent<TMP_Text>();
         if (!scaleTarget) scaleTarget = transform as RectTransform;
 
-        // start hidden
-        if (label) {
-            label.text   = "0" + suffix;
-            label.color  = baseColor;
+        if (label)
+        {
+            label.text    = "0" + suffix; // "0 COMBO"
+            label.color   = baseColor;
             label.enabled = false;
         }
         scaleTarget.localScale = Vector3.one;
@@ -37,38 +39,37 @@ public class ComboCounter : MonoBehaviour
 
     void OnEnable()
     {
-        if (tracker) tracker.OnComboChanged += HandleComboChanged;
+        if (tracker)
+        {
+            tracker.OnComboChanged -= HandleComboChanged; // safety
+            tracker.OnComboChanged += HandleComboChanged;
+        }
     }
-
     void OnDisable()
     {
         if (tracker) tracker.OnComboChanged -= HandleComboChanged;
     }
 
-    void HandleComboChanged(int combo, int _maxCombo)
+    void HandleComboChanged(int combo)
     {
         if (!label) return;
 
         if (combo == 0)
         {
-            // break: reset and hide immediately
             if (anim != null) { StopCoroutine(anim); anim = null; }
-            label.text = "0" + suffix;
             label.enabled = false;
+            label.text = ComboText(0);
             scaleTarget.localScale = Vector3.one;
             lastCombo = 0;
             return;
         }
 
-        // show at threshold
         if (combo >= showFrom && !label.enabled)
             label.enabled = true;
 
-        // update text
-        label.text = combo.ToString() + suffix;
+        label.text = ComboText(combo);
 
-        // pulse on increase
-        if (combo > lastCombo && combo >= showFrom)
+        if (combo != lastCombo)
             Pulse();
 
         lastCombo = combo;
@@ -82,32 +83,27 @@ public class ComboCounter : MonoBehaviour
 
     IEnumerator CoPulse()
     {
-        // scale/color up
         var t = 0f;
-        var startCol = label.color;
-        var startS   = Vector3.one;
-        var midS     = Vector3.one * pulseScale;
+        var startS = Vector3.one;
+        var midS   = Vector3.one * pulseScale;
 
         while (t < pulseUpTime)
         {
             t += Time.unscaledDeltaTime;
-            float a = Mathf.Clamp01(t / pulseUpTime);
-            label.color = Color.Lerp(startCol, baseColor, a);   // keep color stable
+            float a = Mathf.Clamp01(t / Mathf.Max(0.0001f, pulseUpTime));
             scaleTarget.localScale = Vector3.Lerp(startS, midS, a);
             yield return null;
         }
 
-        // settle back
         t = 0f;
         while (t < pulseDownTime)
         {
             t += Time.unscaledDeltaTime;
-            float a = Mathf.Clamp01(t / pulseDownTime);
+            float a = Mathf.Clamp01(t / Mathf.Max(0.0001f, pulseDownTime));
             scaleTarget.localScale = Vector3.Lerp(midS, Vector3.one, a);
             yield return null;
         }
 
-        label.color = baseColor;
         scaleTarget.localScale = Vector3.one;
         anim = null;
     }

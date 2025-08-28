@@ -1,202 +1,179 @@
-using UnityEngine;
+// Assets/Scripts/ScoreTracker.cs
 using System;
+using UnityEngine;
 
 public class ScoreTracker : MonoBehaviour
 {
-    // --- Wiring (assign in inspector or via Hook(..)) ---
-    [SerializeField] ButtonLaneController buttons;
-    [SerializeField] KnobLaneController   knob;
-    [SerializeField] RhythmConductor      conductor;
+    [Header("Scoring (raw, pre-normalization)")]
+    public int MaxScore   = 10_000_000;
+    public int TapPerfect = 10000;
+    public int TapGreat   = 7000;
+    public int TapGood    = 4000;
+    public int TracePerBeat = 6000;            // per beat @100% quality (pre-norm)
 
-    // --- Public readouts (so UI can read live if you want) ---
-    public int Perfect  { get; private set; }
-    public int Great    { get; private set; }
-    public int Good     { get; private set; }
-    public int Miss     { get; private set; }
+    [Header("Trace → scoring & combo")]
+    [Range(0f, 1f)] public float TraceQualityFloor = 0f; // <- was 0.40f
+    [Tooltip("Add +1 combo every N beats while tracing on target.")]
+    public float TraceComboEveryBeats = 1.0f;  // ← slower: once per beat
 
-    public int Combo    { get; private set; }
-    public int MaxCombo { get; private set; }
+    // ----- Runtime -----
+    double _norm = 1.0;
+    double _scoreAccum;
+    public  int Score { get; private set; }
 
-    public int Score    { get; private set; }   // 0..1,000,000
-    public string Grade { get; private set; }   // e.g., S, AAA, AA…
+    public  int Combo    { get; private set; }
+    public  int MaxCombo { get; private set; }
+
+    float  _traceComboBank;
+    bool   _traceComboLocked = false;  // locked after Miss until next Good+
+    bool _normalizedReady = false;
+    ButtonLaneController _buttons;
+    KnobLaneController   _knob;
+    RhythmConductor      _conductor;
     
-    public event Action<int,int> OnComboChanged;
-    // Weights match what you used for knob tick scoring.
-    const float W_Perfect = 1.00f;
-    const float W_Great   = 0.70f;
-    const float W_Good    = 0.40f;
-    const float W_Miss    = 0.00f;
+    // --- DEBUG: last frame scoring info ---
+    public int   DebugLastDelta { get; private set; }   // how many points were actually added last change
+    public string DebugLastTag  { get; private set; }   // where it came from ("Tap Perfect", "Trace tick 1.00*0.016", etc.)
+    public double DebugNorm     => _norm;               // current normalization factor
+    public bool   DebugNormReady => _normalizedReady;   // true once ConfigureNormalization succeeded
 
-    const int MAX_SCORE = 10_000_000;
+    public event Action<int> OnScoreChanged;
+    public event Action<int> OnComboChanged;
 
-    // We accumulate “units” so the final score can be 1e6 * (achieved / max).
-    double achievedUnits, maxUnits;
-
-    // Optional: while tracing the knob, add combo pulses (like SDVX).
-    // We throttle combo bumps so it doesn’t explode every frame.
-    [SerializeField] float comboPulseHzWhileTracing = 8f; // 8 bumps per second while on-target
-    float comboPulseTimer;
-
-    void Awake()
+    // ---------- Lifecycle hooks ----------
+    public void Hook(ButtonLaneController buttons, KnobLaneController knob, RhythmConductor conductor)
     {
-        // You can also call Hook(..) from RhythmEntryPoint if you prefer code wiring.
-        Subscribe();
-        ResetForSong();
+        Unhook();
+
+        _buttons   = buttons;
+        _knob      = knob;
+        _conductor = conductor;
+
+        if (_buttons) _buttons.OnJudged += HandleJudgement;
+        if (_knob)    _knob.OnJudged    += HandleJudgement;
+
+        // Reset
+        _scoreAccum = 0;
+        Score       = 0;
+        Combo       = 0;
+        MaxCombo    = 0;
+        _traceComboBank   = 0f;
+        _traceComboLocked = false;
+
+        RaiseScoreChanged();
+        RaiseComboChanged();
+        // NOTE: Do NOT call ConfigureNormalization here; call it AFTER both lanes load.
     }
 
-    public void Hook(ButtonLaneController b, KnobLaneController k, RhythmConductor c)
+    public void Unhook()
     {
-        buttons = b; knob = k; conductor = c;
-        Subscribe();
+        if (_buttons) { _buttons.OnJudged -= HandleJudgement; _buttons = null; }
+        if (_knob)    { _knob.OnJudged    -= HandleJudgement; _knob    = null; }
+        _conductor = null;
     }
 
-    void OnDisable()
+    /// <summary>Call AFTER both lanes have loaded their charts.</summary>
+    public void ConfigureNormalization(int totalTapNotes, double totalTraceBeats)
     {
-        if (buttons) buttons.OnJudged -= HandleJudgement;
-        if (knob)
+        double perfectSum = (double)TapPerfect * totalTapNotes
+                            + (double)TracePerBeat * totalTraceBeats;
+
+        if (perfectSum <= 0.0)
         {
-            knob.OnJudged            -= HandleJudgement;
-            knob.OnTraceSpanScored   -= HandleTraceSpanScored;
-        }
-    }
-
-    void Subscribe()
-    {
-        if (buttons) buttons.OnJudged += HandleJudgement;      // button taps
-        if (knob)
-        {
-            knob.OnJudged          += HandleJudgement;         // knob head (start) judgement
-            knob.OnTraceSpanScored += HandleTraceSpanScored;   // continuous tracing quality
-        }
-    }
-
-    public void ResetForSong()
-    {
-        Perfect = Great = Good = Miss = 0;
-        Combo = MaxCombo = 0;
-        Score = 0; Grade = "";
-        achievedUnits = 0.0;
-        maxUnits      = 0.0;
-        comboPulseTimer = 0f;
-        
-        RaiseComboChanged(); // <- tell UI we're at 0
-    }
-
-    // ---------- Input from lanes ----------
-
-    void HandleJudgement(Judgement j)
-    {
-        // counts …
-        switch (j)
-        {
-            case Judgement.Perfect: Perfect++; break;
-            case Judgement.Great:   Great++;   break;
-            case Judgement.Good:    Good++;    break;
-            default:                Miss++;    break;
+            _norm = 1.0;
+            _normalizedReady = false;  // do NOT award until we get real totals
+#if UNITY_EDITOR
+            Debug.LogWarning("[ScoreTracker] Normalization skipped (no totals yet).");
+#endif
+            return;
         }
 
-        // combo
-        if (j == Judgement.Miss)
+        _norm = (double)MaxScore / perfectSum;
+        _normalizedReady = true;
+
+#if UNITY_EDITOR
+        Debug.Log($"[ScoreTracker] Normalization set. taps={totalTapNotes}, beats={totalTraceBeats:0.00}, norm={_norm:0.000000}");
+#endif
+    }
+
+
+    // ---------- External scoring hooks ----------
+    public void KnobTraceTick(float quality01, float beatsThisFrame)
+    {
+        if (!_normalizedReady) return;
+        if (beatsThisFrame <= 0f || quality01 <= 0f) return;
+
+        DebugLastTag = $"Trace tick {quality01:0.00}*{beatsThisFrame:0.000}";
+
+        var q = System.Math.Clamp((double)Mathf.Max(TraceQualityFloor, quality01), 0.0, 1.0);
+        double raw = TracePerBeat * q * beatsThisFrame;
+        AddScoreRaw((int)System.Math.Round(raw));
+
+        if (!_traceComboLocked && quality01 > 0f)
         {
-            if (Combo != 0)
+            _traceComboBank += beatsThisFrame;
+            while (_traceComboBank >= TraceComboEveryBeats)
             {
-                Combo = 0;
-                RaiseComboChanged();
+                AddCombo(1);
+                _traceComboBank -= TraceComboEveryBeats;
             }
         }
-        else
-        {
-            BumpCombo();
-        }
-
-        // score units …
-        achievedUnits += JudgementToWeight(j);
-        maxUnits      += W_Perfect;
-        RecomputeScore();
     }
 
 
-    void HandleTraceSpanScored(float sum, float max)
+    public SceneFlow.RhythmResult BuildResult()
     {
-        // The knob lane already gave us “sum” as tick quality totals and “max”
-        // as the best-possible ticks for the span — just add to the pool.
-        achievedUnits += sum;
-        maxUnits      += max;
-        RecomputeScore();
+        var r = new SceneFlow.RhythmResult();
+        r.score    = Score;
+        r.maxCombo = MaxCombo;
+        return r;
     }
 
-    // Optional: call this continuously while knob is inside the tracing window
-    // with 'onTarget' true when tick > 0 (see tiny hook in KnobLaneController below).
-    public void KnobTraceComboPulse(bool onTarget, float deltaTime)
+    // ---------- Internals ----------
+    void HandleJudgement(Judgement j)
     {
-        if (!onTarget) return;
-
-        if (comboPulseHzWhileTracing <= 0f) comboPulseHzWhileTracing = 8f;
-        comboPulseTimer += deltaTime;
-        float period = 1f / comboPulseHzWhileTracing;
-        if (comboPulseTimer >= period)
+        switch (j)
         {
-            comboPulseTimer -= period;
-            BumpCombo();
+            case Judgement.Perfect: DebugLastTag = "Tap Perfect"; AddScoreRaw(TapPerfect); AddCombo(1); _traceComboLocked = false; break;
+            case Judgement.Great:   DebugLastTag = "Tap Great";   AddScoreRaw(TapGreat);   AddCombo(1); _traceComboLocked = false; break;
+            case Judgement.Good:    DebugLastTag = "Tap Good";    AddScoreRaw(TapGood);    AddCombo(1); _traceComboLocked = false; break;
+            case Judgement.Miss:    DebugLastTag = "Tap Miss";    BreakCombo();            _traceComboLocked = true; _traceComboBank = 0f; break;
         }
     }
 
-    // ---------- Finish & export ----------
-
-    void RecomputeScore()
+    void AddScoreRaw(int raw)
     {
-        double ratio = (maxUnits > 0.0) ? (achievedUnits / maxUnits) : 0.0;
-        Score = Mathf.Clamp(Mathf.RoundToInt((float)(MAX_SCORE * ratio)), 0, MAX_SCORE);
-        Grade = GradeFromScore(Score);
+        if (raw <= 0) return;
+
+        int before = Score;
+
+        _scoreAccum += raw * _norm;
+        int clamped = (int)System.Math.Min(_scoreAccum, MaxScore);
+        int delta   = clamped - before;
+
+        if (delta != 0)
+        {
+            Score = clamped;
+            DebugLastDelta = delta;           // <-- store last change
+            OnScoreChanged?.Invoke(Score);
+        }
     }
 
-    void BumpCombo()
+
+    void AddCombo(int delta)
     {
-        Combo++;
+        Combo += delta;
         if (Combo > MaxCombo) MaxCombo = Combo;
-        
         RaiseComboChanged();
     }
 
-    float JudgementToWeight(Judgement j) =>
-        j == Judgement.Perfect ? W_Perfect :
-        j == Judgement.Great   ? W_Great   :
-        j == Judgement.Good    ? W_Good    : W_Miss;
-
-    string GradeFromScore(int s)
-    {
-        // Scale thresholds x10 to match 10,000,000 cap (tweak if you like)
-        if (s >= 9_900_000) return "AAA";
-        if (s >= 9_700_000) return "AA";
-        if (s >= 9_400_000) return "A";
-        if (s >= 9_000_000) return "B";
-        if (s >= 8_500_000) return "C";
-        return "D";
-    }
-
-    // Call this from RhythmEntryPoint when the song finishes (or subscribe to a SongFinished event)
-    public SceneFlow.RhythmResult BuildResult()
-    {
-        return new SceneFlow.RhythmResult {
-            score    = Score,
-            grade    = Grade,
-            maxCombo = MaxCombo,
-            perfect  = Perfect,
-            great    = Great,
-            good     = Good,
-            miss     = Miss
-        };
-    }
-    
-    void RaiseComboChanged()
-    {
-        OnComboChanged?.Invoke(Combo, MaxCombo);
-    }
-    
-    public void BreakCombo()
+    void BreakCombo()
     {
         if (Combo == 0) return;
         Combo = 0;
         RaiseComboChanged();
     }
+
+    void RaiseScoreChanged() => OnScoreChanged?.Invoke(Score);
+    void RaiseComboChanged() => OnComboChanged?.Invoke(Combo);
 }

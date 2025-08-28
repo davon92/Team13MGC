@@ -1,6 +1,7 @@
 // RhythmEntryPoint.cs
 using UnityEngine;
 using System.Collections;
+using TMPro;
 
 public class RhythmEntryPoint : MonoBehaviour
 {
@@ -20,7 +21,6 @@ public class RhythmEntryPoint : MonoBehaviour
     [Header("Outro")]
     [SerializeField] float outroHoldSeconds = 3f;     // <- 3s breathe out
     [SerializeField] float fadeOutSeconds   = 0.6f;   // <- fade length
-    [SerializeField] CanvasGroup fadeOverlay;         // assign your existing black overlay (alpha 0)
     [SerializeField] ScoreTracker score;
 
     bool ending;   // prevent double-outro
@@ -88,9 +88,17 @@ public class RhythmEntryPoint : MonoBehaviour
     {
         if (!conductor) conductor = FindFirstObjectByType<RhythmConductor>();
         if (conductor) conductor.SongFinished += HandleSongFinished;
+
+        if (!score) score = FindFirstObjectByType<ScoreTracker>();
+
+        // Hook scoring to lanes
         if (score && buttons && knob && conductor)
             score.Hook(buttons, knob, conductor);
+
+        // Normalize AFTER charts are loaded into the lanes
+        StartCoroutine(CoNormalizeAfterLoad());
     }
+    
     void OnDisable()
     {
         if (conductor) conductor.SongFinished -= HandleSongFinished;
@@ -142,12 +150,32 @@ public class RhythmEntryPoint : MonoBehaviour
         var result = new SceneFlow.RhythmResult {
             song   = req?.song,
             origin = req?.origin ?? SceneFlow.RhythmOrigin.SongSelect,
-            score  = 0,
+            score  = 00000000,
             cleared= true
         };
         _ = SceneFlow.ReturnFromRhythmAsync(result, alreadyFaded: true);
     }
-    
+    IEnumerator CoNormalizeAfterLoad()
+    {
+        // give the chart loader one frame to push data into the lanes
+        yield return null;
+
+        // wait until the lanes report any non-zero totals (or timeout)
+        float timeout = 3f;
+        while (timeout > 0f &&
+               score && buttons && knob &&
+               buttons.TotalScorableTaps == 0 &&
+               knob.TotalTraceBeats == 0)
+        {
+            timeout -= Time.unscaledDeltaTime;
+            yield return null;
+        }
+
+        if (score && buttons && knob)
+            score.ConfigureNormalization(buttons.TotalScorableTaps, knob.TotalTraceBeats);
+    }
+
+
     static IEnumerator FadeCanvas(CanvasGroup cg, float from, float to, float seconds)
     {
         cg.blocksRaycasts = true;
@@ -160,5 +188,12 @@ public class RhythmEntryPoint : MonoBehaviour
             yield return null;
         }
         cg.alpha = to;
+    }
+    
+    void ConfigureScoringForSong()
+    {
+        var taps  = buttons.TotalScorableTaps;
+        var beats = knob.TotalTraceBeats;
+        score.ConfigureNormalization(taps, beats);
     }
 }
