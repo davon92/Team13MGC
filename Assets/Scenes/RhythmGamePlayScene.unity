@@ -437,6 +437,35 @@ MonoBehaviour:
   scoreTracker: {fileID: 1132293417}
   playerInput: {fileID: 1132293416}
   minDelta01ForEngagement: 0.0025
+  magnetEnabled: 1
+  magnetRadius: 0.105
+  magnetGain: 0.5
+  magnetMax01PerBeat: 0.2
+  magnetOnlyWhenEngaged: 1
+  magnetAsymmetric: 1
+  approachGain: 0.65
+  leaveGain: 0.35
+  approachRadius: 0.08
+  leaveRadius: 0.05
+  magnetHysteresis: 1
+  innerSnapRadius: 0.02
+  innerSnapGain: 0.85
+  cornerBoost: 1
+  cornerGainMul: 1.6
+  cornerRadiusMul: 1.35
+  slopePerBeatThresh: 0.3
+  curvatureThresh: 0.2
+  lockOnEnabled: 1
+  lockAcquireRadius: 0.06
+  lockSnapPerBeat: 0.25
+  lockBreakRadius: 0.12
+  lockIdleBreakMs: 250
+  lockReverseGraceMs: 120
+  lockHardStick: 1
+  breakComboAfterMs: 120
+  missRequiresEngagement: 1
+  playerDotScale: 0.75
+  laneToPlayerWidthRatio: 1.3
   engagedHoldSeconds: 0.15
 --- !u!224 &287150424
 RectTransform:
@@ -973,10 +1002,10 @@ MonoBehaviour:
   laneRect: {fileID: 333419159}
   noteSpeedPxPerSec: 800
   rightToLeft: 1
-  thickness: 32
+  thickness: 16
   stepPixels: 8
   pulseTint: {r: 1, g: 1, b: 1, a: 1}
-  pulseAmount: 0.65
+  pulseAmount: 0.111
   colorPulseHz: 6
   highlightBeats: 2
   lookAheadBeats: 12
@@ -1473,7 +1502,7 @@ MonoBehaviour:
   score: {fileID: 1132293417}
   knob: {fileID: 287150423}
   buttons: {fileID: 287150425}
-  label: {fileID: 0}
+  label: {fileID: 881077199}
   toggleKey: 94
   gamepadToggleAction: ToggleDebug
   digits: 8
@@ -1968,10 +1997,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MaxScore: 10000000
-  TapPerfect: 10000
-  TapGreat: 7000
-  TapGood: 4000
-  TracePerBeat: 6000
+  TapPerfectRaw: 1000
+  TapGreatRaw: 700
+  TapGoodRaw: 400
+  TracePerBeatRaw: 1000
   TraceQualityFloor: 0.4
   TraceComboEveryBeats: 0.25
 --- !u!1 &1133479971

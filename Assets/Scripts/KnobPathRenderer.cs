@@ -82,6 +82,12 @@ public class KnobPathRenderer : MaskableGraphic
         float thickPulse = onTarget ? (0.5f + 0.5f * Mathf.Sin(Time.unscaledTime * 2f * Mathf.PI * pulseHz)) : 0f;
         float thickNow   = Mathf.Max(1f, baseThick * (1f + pulseWhenOnTarget * thickPulse));
 
+        // Color pulse calc stays the same…
+
+        // IMPORTANT: no vertical pad — must match controller mapping 1:1
+        float NormToY(float t) => Mathf.Lerp(r.yMin, r.yMax, Mathf.Clamp01(t));
+
+
         // Colour pulse ONLY near the hit line and ONLY while on target.
         Color baseCol = _baseColor;                                    // never touch alpha globally
         Color toCol   = new Color(pulseTint.r, pulseTint.g, pulseTint.b, baseCol.a);
@@ -96,8 +102,6 @@ public class KnobPathRenderer : MaskableGraphic
             float px   = secs * noteSpeedPxPerSec;
             return rightToLeft ? r.xMin + px : r.xMax - px;
         }
-        float pad = thickNow;
-        float NormToY(float t) => Mathf.Lerp(r.yMin + pad, r.yMax - pad, Mathf.Clamp01(t));
 
         foreach (var span in spans)
         {

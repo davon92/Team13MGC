@@ -66,7 +66,7 @@ public class ScoreDebugHUD : MonoBehaviour
         int expectedTraceAdd = 0;
         if (score.DebugNormReady)
         {
-            double raw = score.TracePerBeat * knob.DebugLastTick * knob.DebugBeatsThisFrame;
+            double raw = score.TracePerBeatRaw * knob.DebugLastTick * knob.DebugBeatsThisFrame;
             expectedTraceAdd = Mathf.RoundToInt( (float)(raw * score.DebugNorm) );
         }
 
