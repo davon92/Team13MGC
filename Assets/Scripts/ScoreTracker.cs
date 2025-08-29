@@ -45,7 +45,11 @@ public class ScoreTracker : MonoBehaviour
     // trace combo throttling
     float _traceComboBank;
     bool  _traceComboLocked;     // set after Miss; unlocks on next Good+
-
+    public int PerfectCount { get; private set; }
+    public int GreatCount   { get; private set; }
+    public int GoodCount    { get; private set; }
+    public int MissCount    { get; private set; }
+    public int MaxCombo     { get; private set; }
     // ---------- Wiring ----------
     public void Hook(ButtonLaneController buttons, KnobLaneController knob, RhythmConductor conductor)
     {
@@ -66,6 +70,8 @@ public class ScoreTracker : MonoBehaviour
         _traceComboLocked = false;
         Combo             = 0;
         Score             = 0;
+        PerfectCount = GreatCount = GoodCount = MissCount = 0;
+        MaxCombo = 0;
         OnScoreChanged?.Invoke(Score);   // makes odometer show 00000000 immediately
         OnComboChanged?.Invoke(0);
     }
@@ -109,33 +115,10 @@ public class ScoreTracker : MonoBehaviour
     {
         switch (j)
         {
-            case Judgement.Perfect:
-                DebugLastTag = "Tap Perfect";
-                AddUnits(TapPerfectRaw);
-                AddCombo(1);
-                _traceComboLocked = false;
-                break;
-
-            case Judgement.Great:
-                DebugLastTag = "Tap Great";
-                AddUnits(TapGreatRaw);
-                AddCombo(1);
-                _traceComboLocked = false;
-                break;
-
-            case Judgement.Good:
-                DebugLastTag = "Tap Good";
-                AddUnits(TapGoodRaw);
-                AddCombo(1);
-                _traceComboLocked = false;
-                break;
-
-            case Judgement.Miss:
-                DebugLastTag = "Tap Miss";
-                BreakCombo();
-                _traceComboLocked = true;   // tracing won’t grow combo until next Good+
-                _traceComboBank   = 0f;
-                break;
+            case Judgement.Perfect: PerfectCount++; AddUnits(TapPerfectRaw); AddCombo(1); _traceComboLocked = false; break;
+            case Judgement.Great:   GreatCount++;   AddUnits(TapGreatRaw);   AddCombo(1); _traceComboLocked = false; break;
+            case Judgement.Good:    GoodCount++;    AddUnits(TapGoodRaw);    AddCombo(1); _traceComboLocked = false; break;
+            case Judgement.Miss:    MissCount++;    BreakCombo(); _traceComboLocked = true; _traceComboBank = 0f; break;
         }
     }
 
@@ -205,27 +188,32 @@ public class ScoreTracker : MonoBehaviour
     }
 
     // ---------- Combo helpers ----------
-    void AddCombo(int inc)
+    void AddCombo(int delta)
     {
-        Combo = Mathf.Max(0, Combo + inc);
+        Combo = Mathf.Max(0, Combo + delta);
+        if (Combo > MaxCombo) MaxCombo = Combo;
         OnComboChanged?.Invoke(Combo);
     }
 
     void BreakCombo()
     {
-        if (Combo != 0)
-        {
-            Combo = 0;
-            OnComboChanged?.Invoke(0);
-        }
+        if (Combo == 0) return;
+        Combo = 0;
+        OnComboChanged?.Invoke(0);
     }
 
     // Optional: used by RhythmEntryPoint
     public SceneFlow.RhythmResult BuildResult()
     {
-        var rr = new SceneFlow.RhythmResult();
-        rr.score = Score;
-        // Fill other fields upstream as you already do in RhythmEntryPoint.
-        return rr;
+        var r = new SceneFlow.RhythmResult
+        {
+            score    = Score,
+            maxCombo = MaxCombo,
+            perfect  = PerfectCount,
+            great    = GreatCount,
+            good     = GoodCount,
+            miss     = MissCount
+        };
+        return r;
     }
 }

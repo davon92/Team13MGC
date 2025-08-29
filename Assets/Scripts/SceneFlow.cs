@@ -9,6 +9,9 @@ public static class SceneFlow
     public const string FrontEndSceneName = "FrontEndScene";
     public const string VNSceneName       = "VNGamePlayScene";
     public const string RhythmSceneName   = "RhythmGamePlayScene";
+    public const string ResultsSceneName = "ResultsScene";  // NEW
+    // Which FrontEnd screen to show after loading the FrontEnd scene.
+    public static string FrontEndStartupScreenId = null;
 
     // ---- Rhythm "travel ticket" ----
     public enum RhythmOrigin { SongSelect, VisualNovel }
@@ -44,6 +47,7 @@ public static class SceneFlow
 
     public static string PendingVNStartNode { get; set; }
 
+    public static void SetFrontEndStartup(string screenId) => FrontEndStartupScreenId = screenId;
     // ---- Entry points ----
     public static async Task GoToRhythmFromSongSelectAsync(SongInfo song, int difficulty = 0, float fade = 0.35f)
     {
@@ -60,16 +64,12 @@ public static class SceneFlow
     /// Called by the rhythm scene when the song ends.
     // SceneFlow.cs
     public static async System.Threading.Tasks.Task ReturnFromRhythmAsync(
-        RhythmResult result,
-        bool alreadyFaded = false,
-        float fadeOut = 0.35f,
-        float fadeIn  = 0.25f)
+        RhythmResult result, bool alreadyFaded = false, float fadeOut = 0.35f, float fadeIn = 0.25f)
     {
-        // put result in both places
         PendingRhythmResult = result;
         LastRhythmResult    = result;
 
-        var req = PendingRhythm;      // consume the “ticket”
+        var req = PendingRhythm;
         PendingRhythm = null;
 
         if (!alreadyFaded && Fade.Instance != null)
@@ -77,16 +77,15 @@ public static class SceneFlow
 
         if (req != null && req.origin == RhythmOrigin.SongSelect)
         {
-            var op = UnityEngine.SceneManagement.SceneManager
-                .LoadSceneAsync(FrontEndSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+            // go to dedicated Results scene (NEW)
+            var op = SceneManager.LoadSceneAsync(ResultsSceneName, LoadSceneMode.Single);
             while (!op.isDone) await System.Threading.Tasks.Task.Yield();
         }
         else
         {
-            var op = UnityEngine.SceneManagement.SceneManager
-                .LoadSceneAsync(VNSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+            // unchanged: back to VN with optional yarn node
+            var op = SceneManager.LoadSceneAsync(VNSceneName, LoadSceneMode.Single);
             while (!op.isDone) await System.Threading.Tasks.Task.Yield();
-
             if (!string.IsNullOrWhiteSpace(req?.returnYarnNode) && VNController.Instance != null)
                 VNController.Instance.StartConversation(req.returnYarnNode);
         }
@@ -94,6 +93,7 @@ public static class SceneFlow
         if (Fade.Instance != null)
             await Fade.Instance.In(fadeIn);
     }
+
 
 
     public static void SubmitRhythmResult(RhythmResult r)
@@ -111,11 +111,18 @@ public static class SceneFlow
     }
 
     // ---- Basic loaders (fade-aware) ----
-    public static async Task LoadFrontEndAsync(float fadeDuration = 0.35f)
+    public static async System.Threading.Tasks.Task LoadFrontEndAsync(
+        string startScreenId = null,
+        float fadeDuration = 0.35f)
     {
+        if (!string.IsNullOrEmpty(startScreenId))
+            FrontEndStartupScreenId = startScreenId;
+
         if (Fade.Instance != null) await Fade.Instance.Out(fadeDuration);
-        var op = SceneManager.LoadSceneAsync(FrontEndSceneName, LoadSceneMode.Single);
-        while (!op.isDone) await Task.Yield();
+
+        var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(FrontEndSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+        while (!op.isDone) await System.Threading.Tasks.Task.Yield();
+
         if (Fade.Instance != null) await Fade.Instance.In(fadeDuration);
     }
 
@@ -132,6 +139,14 @@ public static class SceneFlow
     {
         if (Fade.Instance != null) await Fade.Instance.Out(fadeDuration);
         var op = SceneManager.LoadSceneAsync(RhythmSceneName, LoadSceneMode.Single);
+        while (!op.isDone) await Task.Yield();
+        if (Fade.Instance != null) await Fade.Instance.In(fadeDuration);
+    }
+    
+    public static async Task LoadResultsAsync(float fadeDuration = 0.35f) // NEW
+    {
+        if (Fade.Instance != null) await Fade.Instance.Out(fadeDuration);
+        var op = SceneManager.LoadSceneAsync(ResultsSceneName, LoadSceneMode.Single);
         while (!op.isDone) await Task.Yield();
         if (Fade.Instance != null) await Fade.Instance.In(fadeDuration);
     }

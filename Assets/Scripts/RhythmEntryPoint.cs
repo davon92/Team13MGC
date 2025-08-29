@@ -122,39 +122,29 @@ public class RhythmEntryPoint : MonoBehaviour
 
         conductor?.LockEnd();
         musicSource?.Stop();
-
         var path = FindFirstObjectByType<KnobPathRenderer>();
         if (path) path.enabled = false;
 
-        StartCoroutine(CoOutro());   // your existing fade+return
+        StartCoroutine(CoOutro());
     }
     
     IEnumerator CoOutro()
     {
-        // Freeze gameplay (you already do this)
         foreach (var b in FindObjectsByType<ButtonLaneController>(FindObjectsSortMode.None))
         { b.enabled = false; b.ClearAll(); }
         foreach (var k in FindObjectsByType<KnobLaneController>(FindObjectsSortMode.None))
         { k.enabled = false; k.ClearAll(); }
         if (conductor) conductor.enabled = false;
 
-        // Hold on the last frame
-        yield return new WaitForSecondsRealtime(outroHoldSeconds); // e.g., 3f
+        yield return new WaitForSecondsRealtime(outroHoldSeconds);
 
-        // Global fade to black using the singleton
         if (Fade.Instance != null)
-            yield return Fade.Instance.Out(fadeOutSeconds); // e.g., 0.6f
+            yield return Fade.Instance.Out(fadeOutSeconds);
 
-        // Build result + return (tell SceneFlow we already faded)
-        var req = SceneFlow.PendingRhythm;
-        var result = new SceneFlow.RhythmResult {
-            song   = req?.song,
-            origin = req?.origin ?? SceneFlow.RhythmOrigin.SongSelect,
-            score  = 00000000,
-            cleared= true
-        };
-        _ = SceneFlow.ReturnFromRhythmAsync(result, alreadyFaded: true);
+        // Use the result we already submitted
+        _ = SceneFlow.ReturnFromRhythmAsync(SceneFlow.LastRhythmResult, alreadyFaded: true);
     }
+    
     IEnumerator CoNormalizeAfterLoad()
     {
         // give the chart loader one frame to push data into the lanes
