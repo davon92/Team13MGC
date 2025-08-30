@@ -12,7 +12,7 @@ public static class SceneFlow
     public const string ResultsSceneName = "ResultsScene";  // NEW
     // Which FrontEnd screen to show after loading the FrontEnd scene.
     public static string FrontEndStartupScreenId = null;
-
+    static bool _isReturning;
     // ---- Rhythm "travel ticket" ----
     public enum RhythmOrigin { SongSelect, VisualNovel }
     
@@ -66,34 +66,41 @@ public static class SceneFlow
     public static async System.Threading.Tasks.Task ReturnFromRhythmAsync(
         RhythmResult result, bool alreadyFaded = false, float fadeOut = 0.35f, float fadeIn = 0.25f)
     {
-        PendingRhythmResult = result;
-        LastRhythmResult    = result;
+        if (_isReturning) return;
+        _isReturning = true;
 
-        var req = PendingRhythm;
-        PendingRhythm = null;
-
-        if (!alreadyFaded && Fade.Instance != null)
-            await Fade.Instance.Out(fadeOut);
-
-        if (req != null && req.origin == RhythmOrigin.SongSelect)
+        try
         {
-            // go to dedicated Results scene (NEW)
-            var op = SceneManager.LoadSceneAsync(ResultsSceneName, LoadSceneMode.Single);
-            while (!op.isDone) await System.Threading.Tasks.Task.Yield();
-        }
-        else
-        {
-            // unchanged: back to VN with optional yarn node
-            var op = SceneManager.LoadSceneAsync(VNSceneName, LoadSceneMode.Single);
-            while (!op.isDone) await System.Threading.Tasks.Task.Yield();
-            if (!string.IsNullOrWhiteSpace(req?.returnYarnNode) && VNController.Instance != null)
-                VNController.Instance.StartConversation(req.returnYarnNode);
-        }
+            PendingRhythmResult = result ?? PendingRhythmResult;
+            LastRhythmResult    = PendingRhythmResult;
 
-        if (Fade.Instance != null)
-            await Fade.Instance.In(fadeIn);
+            var req = PendingRhythm;      // capture before clearing
+            PendingRhythm = null;
+
+            if (!alreadyFaded && Fade.Instance != null)
+                await Fade.Instance.Out(fadeOut);
+
+            if (req != null && req.origin == RhythmOrigin.SongSelect)
+            {
+                var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(ResultsSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+                while (!op.isDone) await System.Threading.Tasks.Task.Yield();
+            }
+            else
+            {
+                var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(VNSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
+                while (!op.isDone) await System.Threading.Tasks.Task.Yield();
+                if (!string.IsNullOrWhiteSpace(req?.returnYarnNode) && VNController.Instance != null)
+                    VNController.Instance.StartConversation(req.returnYarnNode);
+            }
+
+            if (Fade.Instance != null)
+                await Fade.Instance.In(fadeIn);
+        }
+        finally
+        {
+            _isReturning = false;
+        }
     }
-
 
 
     public static void SubmitRhythmResult(RhythmResult r)

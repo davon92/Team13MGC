@@ -2,7 +2,6 @@
 using UnityEngine;
 using TMPro;
 
-[RequireComponent(typeof(TMP_Text))]
 public class ScoreOdometer : MonoBehaviour
 {
     [SerializeField] ScoreTracker tracker;   // optional; auto-finds

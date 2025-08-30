@@ -388,6 +388,7 @@ GameObject:
   - component: {fileID: 2653318964713382106}
   - component: {fileID: 1868343079015534953}
   - component: {fileID: 1296077570580251208}
+  - component: {fileID: 5304736015633785497}
   m_Layer: 0
   m_Name: LoadGameButton
   m_TagString: Untagged
@@ -517,6 +518,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &5304736015633785497
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1035840059812644650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: LoadGameButton
 --- !u!1 &1224662577477900373
 GameObject:
   m_ObjectHideFlags: 0
@@ -805,6 +819,7 @@ GameObject:
   - component: {fileID: 3354891727885487325}
   - component: {fileID: 2538380894617020922}
   - component: {fileID: 7842415305956713412}
+  - component: {fileID: 508441782120930422}
   m_Layer: 0
   m_Name: NewGameButton
   m_TagString: Untagged
@@ -934,6 +949,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &508441782120930422
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4076692894272666386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: NewGameButton
 --- !u!1 &5028729822626999373
 GameObject:
   m_ObjectHideFlags: 0

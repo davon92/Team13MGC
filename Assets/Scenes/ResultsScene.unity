@@ -442,6 +442,10 @@ PrefabInstance:
       value: ScreenController
       objectReference: {fileID: 0}
     - target: {fileID: 8216467093837002524, guid: d1030c187195e5043bce05c9bceaaf9b, type: 3}
+      propertyPath: initialScreenId
+      value: Results
+      objectReference: {fileID: 0}
+    - target: {fileID: 8216467093837002524, guid: d1030c187195e5043bce05c9bceaaf9b, type: 3}
       propertyPath: screenBehaviours.Array.size
       value: 1
       objectReference: {fileID: 0}

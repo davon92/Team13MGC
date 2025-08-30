@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 2556640024851338988}
   - component: {fileID: 5415922342566067443}
   - component: {fileID: 1410993027082693535}
+  - component: {fileID: 3087426454344744199}
   m_Layer: 0
   m_Name: StoryButton
   m_TagString: Untagged
@@ -142,6 +143,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &3087426454344744199
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 302468655158462291}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: StoryButton
 --- !u!1 &431943309596311354
 GameObject:
   m_ObjectHideFlags: 0
@@ -985,6 +999,7 @@ GameObject:
   - component: {fileID: 213544884984781531}
   - component: {fileID: 324358969784532305}
   - component: {fileID: 3347233437736487314}
+  - component: {fileID: 7435353528031562966}
   m_Layer: 0
   m_Name: FreePlayButton
   m_TagString: Untagged
@@ -1114,6 +1129,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &7435353528031562966
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3489211086781866792}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: FreePlayButton
 --- !u!1 &4128077959335442226
 GameObject:
   m_ObjectHideFlags: 0
@@ -1202,6 +1230,7 @@ GameObject:
   - component: {fileID: 4185799069176358987}
   - component: {fileID: 8980389174808060172}
   - component: {fileID: 8170437939307244132}
+  - component: {fileID: 6197882518902634002}
   m_Layer: 0
   m_Name: SettingsButton
   m_TagString: Untagged
@@ -1331,6 +1360,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &6197882518902634002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4765091356559848369}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: SettingsButton
 --- !u!1 &4910743422251731475
 GameObject:
   m_ObjectHideFlags: 0
@@ -1344,6 +1386,7 @@ GameObject:
   - component: {fileID: 6863068030850229749}
   - component: {fileID: 6970143895146771264}
   - component: {fileID: 2021776237034222229}
+  - component: {fileID: 9116547244710986288}
   m_Layer: 0
   m_Name: QuitGameButton
   m_TagString: Untagged
@@ -1473,6 +1516,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &9116547244710986288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4910743422251731475}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: QuitGameButton
 --- !u!1 &4911191321963891917
 GameObject:
   m_ObjectHideFlags: 0
@@ -1561,6 +1617,7 @@ GameObject:
   - component: {fileID: 4520833485830968992}
   - component: {fileID: 757907182453210075}
   - component: {fileID: 8460421282908257239}
+  - component: {fileID: 7175349723536652040}
   m_Layer: 0
   m_Name: CreditsButton
   m_TagString: Untagged
@@ -1690,6 +1747,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &7175349723536652040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5037906510331604827}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: CreditsButton
 --- !u!1 &5590140393308275494
 GameObject:
   m_ObjectHideFlags: 0
@@ -1703,6 +1773,7 @@ GameObject:
   - component: {fileID: 5216047505890165956}
   - component: {fileID: 2865389789044356518}
   - component: {fileID: 7427369088868077308}
+  - component: {fileID: 3498064764607023077}
   m_Layer: 0
   m_Name: GalleryButton
   m_TagString: Untagged
@@ -1832,6 +1903,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &3498064764607023077
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5590140393308275494}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: GalleryButton
 --- !u!1 &5591638304153947497
 GameObject:
   m_ObjectHideFlags: 0

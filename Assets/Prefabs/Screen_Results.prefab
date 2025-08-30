@@ -426,6 +426,7 @@ MonoBehaviour:
   root: {fileID: 1401229696668731026}
   firstSelected: {fileID: 5748679221002420004}
   screens: {fileID: 0}
+  backButton: {fileID: 8940988490308176685}
   coverImage: {fileID: 6888636735386081807}
   titleText: {fileID: 1597445247842211168}
   artistText: {fileID: 4146584184297675688}

@@ -1646,8 +1646,10 @@ GameObject:
   - component: {fileID: 8114875378242387079}
   - component: {fileID: 1490687861129068376}
   - component: {fileID: 3438245289444970474}
+  - component: {fileID: 9007885024305055239}
   - component: {fileID: 2532729502418932819}
   - component: {fileID: 5936460459159746695}
+  - component: {fileID: 3965917300157365581}
   m_Layer: 0
   m_Name: AudioButton
   m_TagString: Untagged
@@ -1714,6 +1716,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &9007885024305055239
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778388986263139877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0eedde8df0ab249a05524d133e782e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  group: {fileID: 934649190484844772}
 --- !u!114 &2532729502418932819
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1777,6 +1792,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &3965917300157365581
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1778388986263139877}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: AudioButton
 --- !u!1 &1832742081278338987
 GameObject:
   m_ObjectHideFlags: 0
@@ -2373,8 +2401,10 @@ GameObject:
   - component: {fileID: 4232524214789579521}
   - component: {fileID: 7676958320921683977}
   - component: {fileID: 8644440866325418366}
+  - component: {fileID: 1994863043822643392}
   - component: {fileID: 6180576015623581682}
   - component: {fileID: 2653587897279154140}
+  - component: {fileID: 4451563827196238700}
   m_Layer: 0
   m_Name: GraphicsButton
   m_TagString: Untagged
@@ -2441,6 +2471,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1994863043822643392
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2395851160894595920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0eedde8df0ab249a05524d133e782e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  group: {fileID: 934649190484844772}
 --- !u!114 &6180576015623581682
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2504,6 +2547,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &4451563827196238700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2395851160894595920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: GraphicsButton
 --- !u!1 &2636519591066293983
 GameObject:
   m_ObjectHideFlags: 0
@@ -5508,8 +5564,10 @@ GameObject:
   - component: {fileID: 8524666898690848686}
   - component: {fileID: 4657249088807727027}
   - component: {fileID: 1992854365268057184}
+  - component: {fileID: 1297655943501767138}
   - component: {fileID: 6698807873780418206}
   - component: {fileID: 732032307894992050}
+  - component: {fileID: 5213769831901895152}
   m_Layer: 0
   m_Name: GameplayButton
   m_TagString: Untagged
@@ -5576,6 +5634,19 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &1297655943501767138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6669000858688461892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e0eedde8df0ab249a05524d133e782e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  group: {fileID: 934649190484844772}
 --- !u!114 &6698807873780418206
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5639,6 +5710,19 @@ MonoBehaviour:
   axis: 0
   setZeroOnEnable: 1
   hoverActsLikeSelect: 1
+--- !u!114 &5213769831901895152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6669000858688461892}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ea706908e36b14aa4b8952f2edfefa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  key: GameplayButton
 --- !u!1 &6717795085019521394
 GameObject:
   m_ObjectHideFlags: 0
@@ -8850,15 +8934,9 @@ MonoBehaviour:
   panelGraphics: {fileID: 7539276209475818210}
   panelAudio: {fileID: 4957068931679912982}
   mouseSensitivity: {fileID: 7984407933030841097}
-  controllerSensitivity: {fileID: 3072898641304860745}
-  invertYToggle: {fileID: 3413412948995351272}
   resolutionDropdown: {fileID: 7965856167934917421}
-  modeDropdown: {fileID: 3416481290513621876}
-  qualityDropdown: {fileID: 5827975058040300582}
-  vsyncToggle: {fileID: 4879881922878043114}
-  applyGraphicsButton: {fileID: 2510880772078390682}
   masterVolume: {fileID: 3926085115146554278}
-  backButton: {fileID: 7869755623083304734}
+  leftNavGroup: {fileID: 934649190484844772}
 --- !u!114 &934649190484844772
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8873,6 +8951,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   scopeRoot: {fileID: 4386646269183275181}
   syncOnEnable: 1
+  keepLastWhenOutside: 1
   pollSelection: 1
   instantOnSync: 1
 --- !u!1 &8843053718877753189

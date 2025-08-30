@@ -22,9 +22,10 @@ public class RhythmEntryPoint : MonoBehaviour
     [SerializeField] float outroHoldSeconds = 3f;     // <- 3s breathe out
     [SerializeField] float fadeOutSeconds   = 0.6f;   // <- fade length
     [SerializeField] ScoreTracker score;
-
-    bool ending;   // prevent double-outro
-
+    
+    bool  ending;                 // prevents double-returns
+    bool  _songReallyFinished;    // latched by event OR by watchdog
+    float _endWatchdogTimer;      // backup timer to call finish if event was missed
     void Awake()
     {
         var req = SceneFlow.PendingRhythm;
@@ -83,6 +84,22 @@ public class RhythmEntryPoint : MonoBehaviour
             conductor.ArmAfter(prerollSeconds);
         }
     }
+    
+    void Update()
+    {
+        if (ending) return;
+
+        // Prefer a finished flag from your conductor. If you don’t have it, use your own condition.
+        if (conductor && conductor.IsFinished)
+            _songReallyFinished = true;
+
+        if (_songReallyFinished)
+        {
+            _endWatchdogTimer += Time.unscaledDeltaTime;
+            if (_endWatchdogTimer >= 0.15f)      // small settle delay for UI/ticks
+                HandleSongFinished();
+        }
+    }
 
     void OnEnable()
     {
@@ -110,40 +127,39 @@ public class RhythmEntryPoint : MonoBehaviour
         ending = true;
 
         if (!score) score = FindFirstObjectByType<ScoreTracker>();
-
         var result = score ? score.BuildResult() : new SceneFlow.RhythmResult();
 
+        // attach request info (origin, song, VN node, etc.)
         var req = SceneFlow.PendingRhythm;
-        result.song   = req?.song;
-        result.origin = req?.origin ?? SceneFlow.RhythmOrigin.SongSelect;
+        result.origin  = req?.origin ?? SceneFlow.RhythmOrigin.SongSelect;
+        result.song    = req?.song;
         result.cleared = true;
 
         SceneFlow.SubmitRhythmResult(result);
 
+        // stop gameplay visuals & input
         conductor?.LockEnd();
-        musicSource?.Stop();
-        var path = FindFirstObjectByType<KnobPathRenderer>();
-        if (path) path.enabled = false;
+        foreach (var b in FindObjectsByType<ButtonLaneController>(FindObjectsSortMode.None)) { b.enabled = false; b.ClearAll(); }
+        foreach (var k in FindObjectsByType<KnobLaneController>(FindObjectsSortMode.None))   { k.enabled = false; k.ClearAll(); }
 
         StartCoroutine(CoOutro());
     }
+
     
     IEnumerator CoOutro()
     {
-        foreach (var b in FindObjectsByType<ButtonLaneController>(FindObjectsSortMode.None))
-        { b.enabled = false; b.ClearAll(); }
-        foreach (var k in FindObjectsByType<KnobLaneController>(FindObjectsSortMode.None))
-        { k.enabled = false; k.ClearAll(); }
+        // stop gameplay & judging
+        foreach (var b in FindObjectsByType<ButtonLaneController>(FindObjectsSortMode.None)) { b.enabled = false; b.ClearAll(); }
+        foreach (var k in FindObjectsByType<KnobLaneController>(FindObjectsSortMode.None))   { k.enabled = false; k.ClearAll(); }
         if (conductor) conductor.enabled = false;
 
-        yield return new WaitForSecondsRealtime(outroHoldSeconds);
+        // small settle so the last UI ticks finish
+        yield return new WaitForSecondsRealtime(0.25f);
 
-        if (Fade.Instance != null)
-            yield return Fade.Instance.Out(fadeOutSeconds);
-
-        // Use the result we already submitted
-        _ = SceneFlow.ReturnFromRhythmAsync(SceneFlow.LastRhythmResult, alreadyFaded: true);
+        // Let SceneFlow route & fade (VN vs Results). We already submitted the result.
+        _ = SceneFlow.ReturnFromRhythmAsync(SceneFlow.LastRhythmResult, alreadyFaded: false);
     }
+
     
     IEnumerator CoNormalizeAfterLoad()
     {

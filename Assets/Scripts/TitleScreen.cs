@@ -37,17 +37,48 @@ public class TitleScreen : MonoBehaviour, IUIScreen
 
     public void OnShow(object args)
     {
-        if (firstSelected && EventSystem.current)
+        var es = EventSystem.current;
+
+        // If ScreenController already restored something under this screen, leave it alone.
+        if (es)
         {
-            var cur = EventSystem.current.currentSelectedGameObject;
+            var cur = es.currentSelectedGameObject;
+            bool hasSaved = SelectionMemory.TryGet(ScreenId, out _);
             bool needFocus = cur == null || !cur.activeInHierarchy || !cur.transform.IsChildOf(Root.transform);
-            if (needFocus)
-                EventSystem.current.SetSelectedGameObject(firstSelected);
-            var grp = Root.GetComponentInChildren<UISelectScalerGroup>(true);
-            if (grp) grp.SyncNow(instant: true);
+
+            // Only force FirstSelected when we truly have nothing AND no saved memory.
+            if (needFocus && !hasSaved && firstSelected)
+                es.SetSelectedGameObject(firstSelected);
         }
+
+        // Just sync visuals to whatever is currently selected.
+        var grp = Root.GetComponentInChildren<UISelectScalerGroup>(true);
+        if (grp) grp.SyncNow(instant: true);
+        StartCoroutine(CoSnapUnderlineNextFrame());
     }
 
+    private System.Collections.IEnumerator CoSnapUnderlineNextFrame()
+    {
+        yield return null; // let ScreenController call SafeSelect first
+
+        var es = EventSystem.current;
+        if (!es) yield break;
+
+        // 1) Ask the underline group to sync immediately (no tween)
+        var group = root ? root.GetComponentInChildren<UISelectScalerGroup>(true) : null;
+        if (group != null)
+            group.SyncNow(instant: true);
+
+        // 2) Force the selected button's underline on (instant)
+        var sel = es.currentSelectedGameObject;
+        if (sel != null)
+        {
+            var sos = sel.GetComponentInParent<ScaleOnSelect>(true);
+            if (sos != null)
+                sos.SetSelected(true, instant: true);
+        }
+    }
+    
     public void OnHide()
     {
         // (Optional) Cleanup, stop title-specific SFX, etc.

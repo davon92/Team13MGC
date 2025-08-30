@@ -102,16 +102,25 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
 
     public void OnShow(object args)
     {
-        if (FirstSelected) EventSystem.current.SetSelectedGameObject(FirstSelected);
-        UpdateLeftPanel();      // updates art/text
+        // Only set focus if nothing under THIS screen is currently selected.
+        if (FirstSelected && EventSystem.current)
+        {
+            var cur = EventSystem.current.currentSelectedGameObject;
+            bool need = cur == null || !cur.activeInHierarchy || !cur.transform.IsChildOf(Root.transform);
+            if (need) EventSystem.current.SetSelectedGameObject(FirstSelected);
+        }
+
+        UpdateLeftPanel();
         ApplyFocusTween();
 
         // schedule the initial preview with a short delay (feels nicer)
         SchedulePreview(Current);
     }
 
+
     public void OnHide()
     {
+        transitioning = false;   // don't leave this true between shows
         CancelPreview();
         if (preview) preview.Stop();
 
@@ -124,12 +133,25 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     // ───────────────────────── existing logic ─────────────────────────
     void OnEnable()
     {
+        EnsureScreens();
         BuildList();
         UpdateLeftPanel();
         FocusCenterTile();
         ApplyFocusTween();
 
         SchedulePreview(Current);
+    }
+    
+    void EnsureScreens()
+    {
+        // If missing or pointing to a ScreenController from a different scene, rebind.
+        if (!screens || screens.gameObject.scene != gameObject.scene)
+        {
+            screens = FindFirstObjectByType<ScreenController>();
+#if UNITY_EDITOR
+            Debug.Log($"[SongSelect] Rebound screens to '{(screens ? screens.name : "NULL")}' in scene '{gameObject.scene.name}'");
+#endif
+        }
     }
 
     // Build or rebuild the ring of tiles and bind data around currentSong
@@ -420,10 +442,17 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
 
     public void OnBack()
     {
-        if (transitioning) return;
+        EnsureScreens();            // <- make sure we’re calling the right controller
         CancelPreview();
-        screens?.Pop();
+        transitioning = false;
+
+#if UNITY_EDITOR
+        Debug.Log($"[SongSelect] OnBack: POP  controller={(screens ? screens.name : "NULL")} scene={(screens ? screens.gameObject.scene.name : "NULL")}");
+#endif
+        if (screens) screens.Pop();
+
     }
+
 
     // ───────────────────────── Left panel helpers ─────────────────────────
     void UpdateLeftPanel()

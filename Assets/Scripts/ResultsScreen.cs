@@ -50,7 +50,7 @@ public class ResultsScreen : MonoBehaviour, IUIScreen
     public string     ScreenId      => MenuIds.Results;
     public GameObject Root          => root != null ? root : gameObject;
     public GameObject FirstSelected => firstSelected;
-
+    [SerializeField] string songSelectScreenId = MenuIds.SongSelect;
     void Awake()
     {
         if (root == null) root = gameObject;
@@ -139,9 +139,8 @@ public class ResultsScreen : MonoBehaviour, IUIScreen
     // UI hook for your Back button
     public void OnBackToSongSelect()
     {
-        // Your Free Play / Song Select screen id. If your FreePlay screen’s IUIScreen.ScreenId is "FreePlay",
-        // pass "FreePlay" here; change if you use a different id.
-        SceneFlow.SetFrontEndStartup("FreePlay");
-        _ = SceneFlow.LoadFrontEndAsync();   // will fade + show "FreePlay" when the scene opens
+        // Works whether or not you added the LoadFrontEndAsync(startScreenId) overload.
+        SceneFlow.SetFrontEndStartup(songSelectScreenId);
+        _ = SceneFlow.LoadFrontEndAsync();   // FrontEndBootstrap will jump straight to Song Select
     }
 }

@@ -31,14 +31,20 @@ public class Fade : MonoBehaviour
     {
         var tcs = new TaskCompletionSource<bool>();
         cg.DOKill();
-        cg.blocksRaycasts = true; // swallow clicks during transition
+
+        // NEW: during the fade we deliberately block clicks
+        cg.blocksRaycasts = true;
+        cg.interactable   = true;   // NEW
 
         cg.DOFade(target, Mathf.Max(0.0001f, duration))
             .SetEase(ease)
             .SetUpdate(true)
             .OnComplete(() =>
             {
-                cg.blocksRaycasts = target > 0.99f;
+                // NEW: after the fade finishes, only the “black” state should block
+                bool isBlack = target > 0.99f;
+                cg.blocksRaycasts = isBlack;
+                cg.interactable   = isBlack;   // NEW
                 tcs.TrySetResult(true);
             });
 
