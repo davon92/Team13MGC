@@ -6,28 +6,27 @@ using UnityEngine.InputSystem;
 
 public class GalleryScreen : MonoBehaviour, IUIScreen
 {
-    
     [Header("Screen wiring")]
     [SerializeField] private GameObject root;              // Screen_Gallery panel
-    [SerializeField] private GameObject firstSelected;     // default focus (e.g., Back button)
+    [SerializeField] private GameObject firstSelected;     // will be replaced by first tile
     [SerializeField] private ScreenController screens;
     [SerializeField] private Button backButton;
 
-    public string ScreenId => MenuIds.Gallery;            // adjust if you use a different id
-    public GameObject Root => root != null ? root : gameObject;
+    public string     ScreenId      => MenuIds.Gallery;
+    public GameObject Root          => root != null ? root : gameObject;
     public GameObject FirstSelected => firstSelected;
 
     [Header("Data")]
     [SerializeField] private GalleryDatabase database;
 
     [Header("UI")]
-    [SerializeField] private Transform gridRoot;     // ScrollRect/Content
+    [SerializeField] private Transform   gridRoot;     // ScrollRect/Content
     [SerializeField] private GalleryTile tilePrefab;
-    [SerializeField] private ScrollRect scroll;
+    [SerializeField] private ScrollRect  scroll;
     [SerializeField] private FullscreenImageViewer viewer;
 
     readonly List<GameObject> pool = new();
-    GameObject lastTileFocused;                       // remember a sensible focus after closing viewer
+    GameObject lastTileFocused;
 
     void Awake()
     {
@@ -39,18 +38,28 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
     public void OnShow(object args)
     {
         BuildGrid();
+
+        // Ensure we start at the top of the list, not the middle.
+        if (scroll)
+        {
+            Canvas.ForceUpdateCanvases();
+            scroll.verticalNormalizedPosition = 1f;   // 1 = top, 0 = bottom
+        }
+
         viewer?.Hide();
 
-        // pick initial focus: a tile if we found one, otherwise whatever you set in the inspector
-        if (firstSelected)
-            EventSystem.current.SetSelectedGameObject(firstSelected);
+        // Select on the *next* frame so layout/ScrollRect are settled.
+        if (firstSelected) StartCoroutine(SelectNextFrame(firstSelected));
     }
 
-    public void OnHide() => viewer?.Hide();
+    public void OnHide()
+    {
+        viewer?.Hide();
+    }
 
     void BuildGrid()
     {
-        // Clear
+        // Clear old tiles
         foreach (var go in pool) Destroy(go);
         pool.Clear();
 
@@ -61,28 +70,35 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
 
         foreach (var item in database.items)
         {
-            bool unlocked = GallerySaves.IsUnlocked(item.id);
-            if (!unlocked && item.hideIfLocked) continue;
+            bool unlocked = GallerySaves.IsUnlocked(item.id); // reads PlayerPrefs once and caches  :contentReference[oaicite:0]{index=0}
+            if (!unlocked && item.hideIfLocked) continue;     // optional hide rule on item         :contentReference[oaicite:1]{index=1}
 
             var tile = Instantiate(tilePrefab, gridRoot);
             tile.Setup(item, unlocked, OnTileClicked);
             tile.SetSelectionForwarder(ScrollTo);
             pool.Add(tile.gameObject);
 
-            if (firstTileBtn == null) firstTileBtn = tile.GetComponent<Button>();
-            if (unlocked && firstUnlockedBtn == null) firstUnlockedBtn = tile.GetComponent<Button>();
-        }
-        
-        var toFocus = firstTileBtn?.gameObject;
+            var btn = tile.GetComponent<Button>();
+            if (!btn) continue;
 
-        if (toFocus != null)
-        {
-            firstSelected = toFocus;
-            EventSystem.current.SetSelectedGameObject(firstSelected);
+            if (firstTileBtn == null) firstTileBtn = btn;
+            if (unlocked && firstUnlockedBtn == null) firstUnlockedBtn = btn;
         }
 
+        // Prefer the first *unlocked* tile for focus; otherwise the very first tile.
+        var prefer = (firstUnlockedBtn ? firstUnlockedBtn : firstTileBtn);
+        firstSelected = prefer ? prefer.gameObject : firstSelected;
     }
-    
+
+    System.Collections.IEnumerator SelectNextFrame(GameObject go)
+    {
+        // one frame for layout & ScrollRect to settle
+        yield return null;
+        if (!go) yield break;
+
+        EventSystem.current.SetSelectedGameObject(go);  // selection triggers GalleryTile.OnSelect which calls ScrollTo  :contentReference[oaicite:2]{index=2}
+    }
+
     void ScrollTo(RectTransform tile)
     {
         if (!scroll || !tile) return;
@@ -97,7 +113,7 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
         float scrollable = Mathf.Max(0f, content.rect.height - view.rect.height);
         if (scrollable <= 0f) return;
 
-        // World corners -> viewport local space.
+        // Convert corners into viewport-local space
         Vector3[] v = new Vector3[4]; view.GetWorldCorners(v);
         Vector3[] t = new Vector3[4]; tile.GetWorldCorners(t);
         for (int i = 0; i < 4; i++)
@@ -106,31 +122,23 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
             t[i] = view.InverseTransformPoint(t[i]);
         }
 
-        // dy > 0 means the tile's top is above the viewport's top (needs to scroll DOWN).
-        // dy < 0 means the tile's bottom is below the viewport's bottom (needs to scroll UP).
+        // Positive dy -> tile above view (need to scroll down); Negative -> below view (scroll up).
         float dy = 0f;
-        if (t[1].y > v[1].y)            // tile top above view top
-            dy = t[1].y - v[1].y;
-        else if (t[0].y < v[0].y)       // tile bottom below view bottom
-            dy = t[0].y - v[0].y;
+        if (t[1].y > v[1].y)      dy = t[1].y - v[1].y; // top above
+        else if (t[0].y < v[0].y) dy = t[0].y - v[0].y; // bottom below
 
         if (Mathf.Abs(dy) < 0.5f) return; // already fully visible
 
-        // Convert pixel delta (dy) into a normalized delta for ScrollRect.
-        // verticalNormalizedPosition: 1 = top, 0 = bottom.
         float deltaNorm = dy / scrollable;
-        scroll.verticalNormalizedPosition = Mathf.Clamp01(
-            scroll.verticalNormalizedPosition + deltaNorm
-        );
+        scroll.verticalNormalizedPosition = Mathf.Clamp01(scroll.verticalNormalizedPosition + deltaNorm);
     }
-
 
     void OnTileClicked(GalleryItem item)
     {
         lastTileFocused = EventSystem.current.currentSelectedGameObject;
-        viewer.Show(item);
+        viewer?.Show(item);
 
-        // keep a valid selection alive so Cancel (B/Esc) still routes to this screen
+        // keep a valid selection so Cancel (B/Esc) still returns to the grid
         var fallback = lastTileFocused ? lastTileFocused : firstSelected;
         if (fallback) EventSystem.current.SetSelectedGameObject(fallback);
     }
@@ -146,23 +154,26 @@ public class GalleryScreen : MonoBehaviour, IUIScreen
         }
         screens?.Pop();
     }
-    
 
-    public void OnUI_Cancel(InputValue value) => OnBack();
-    
+    public void OnUI_Cancel(InputValue _) => OnBack();
+
+    // QA helpers
     [ContextMenu("Unlock All Gallery (and Rebuild)")]
     void UnlockAllAndRebuild()
     {
         if (!database) return;
-        foreach (var it in database.items)
-            GallerySaves.Unlock(it.id);   // writes to PlayerPrefs
-        BuildGrid();                       // forces UI to refresh
+        foreach (var it in database.items) GallerySaves.Unlock(it.id); // writes PlayerPrefs  :contentReference[oaicite:3]{index=3}
+        BuildGrid();
+        if (scroll) { Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition = 1f; }
+        if (firstSelected) StartCoroutine(SelectNextFrame(firstSelected));
     }
 
     [ContextMenu("Clear Gallery Unlocks (and Rebuild)")]
     void ClearUnlocksAndRebuild()
     {
-        GallerySaves.ClearAll();           // wipes PlayerPrefs for gallery
+        GallerySaves.ClearAll();  // clears PlayerPrefs                                   :contentReference[oaicite:4]{index=4}
         BuildGrid();
+        if (scroll) { Canvas.ForceUpdateCanvases(); scroll.verticalNormalizedPosition = 1f; }
+        if (firstSelected) StartCoroutine(SelectNextFrame(firstSelected));
     }
 }
