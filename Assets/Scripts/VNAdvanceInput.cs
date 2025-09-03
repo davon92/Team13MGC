@@ -1,50 +1,44 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Yarn.Unity;
-using Yarn.Unity.Legacy;
 
+/// Attach this to the same GameObject that has your DialogueRunner
+/// (or anywhere in the scene and assign the reference).
 public class VNAdvanceInput : MonoBehaviour
 {
-    [Header("Refs")]
-    [SerializeField] private DialogueRunner runner;           // your DialogueRunner in scene
-    [SerializeField] private DialogueViewBase dialogueView;   // your VNDialogueView (it derives from DialogueViewBase)
+    [Header("Wiring")]
+    [SerializeField] DialogueRunner runner;               // Dialogue System's DialogueRunner
 
-    [Header("Input System")]
-    [SerializeField] private InputActionReference advanceAction; // e.g. UI/Submit, or a custom "Advance" action
+    [Header("Input")]
+    [SerializeField] InputActionReference advanceAction;  // e.g. Controls/Submit, Gamepad A, Mouse Left
+    [SerializeField] bool enableOnStart = true;
 
-    private InputAction _action;
-
-    private void OnEnable()
+    void Awake()
     {
-        if (advanceAction != null)
-        {
-            _action = advanceAction.action;
-            _action.performed += OnAdvancePerformed;
-            _action.Enable();
-        }
+        if (!runner) runner = FindFirstObjectByType<DialogueRunner>();
+        if (!runner) Debug.LogError("[VNAdvanceInput] No DialogueRunner found.");
+        if (!advanceAction) Debug.LogWarning("[VNAdvanceInput] No InputActionReference assigned.");
     }
 
-    private void OnDisable()
+    void OnEnable()
     {
-        if (_action != null)
-        {
-            _action.performed -= OnAdvancePerformed;
-            _action.Disable();
-        }
+        if (enableOnStart) advanceAction?.action.Enable();
+        if (advanceAction) advanceAction.action.performed += OnAdvance;
     }
 
-    private void OnAdvancePerformed(InputAction.CallbackContext _)
+    void OnDisable()
     {
-        // Only advance if dialogue is currently running and no other menu is on top.
-        if (runner != null && runner.IsDialogueRunning && dialogueView != null)
-        {
-            dialogueView.UserRequestedViewAdvancement();
-        }
+        if (advanceAction) advanceAction.action.performed -= OnAdvance;
+        if (enableOnStart) advanceAction?.action.Disable();
     }
 
-    // Optional: public method for hooking a UI Button's OnClick
-    public void AdvanceViaUIButton()
+    private void OnAdvance(InputAction.CallbackContext _)
     {
-        OnAdvancePerformed(default);
+        // Only advance when a conversation is running
+        if (runner == null || runner.IsDialogueRunning == false) return;
+
+        // In Yarn 3.x this requests the next piece of content.
+        // If options are currently on screen, this is ignored (safe).
+        runner.RequestNextLine();
     }
 }

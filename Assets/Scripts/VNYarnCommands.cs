@@ -1,74 +1,78 @@
 using UnityEngine;
 using Yarn.Unity;
 
-/// Commands you can call from Yarn, e.g.:
-/// <<sfx "Select">>, <<bg "Cafe">>, <<go_to_rhythm "songId">>, <<pause_menu>>
 public class VNYarnCommands : MonoBehaviour
 {
-    [SerializeField] SongDatabase songDb;
-    
-    SongInfo Find(string id)
+    [SerializeField] private SongDatabase songs;   // assign in Inspector
+
+    DialogueRunner runner;
+
+    void Awake()
     {
-        if (!songDb || songDb.songs == null) return null;
-        foreach (var s in songDb.songs) {
+        runner = FindFirstObjectByType<DialogueRunner>();
+        if (!runner)
+        {
+            Debug.LogError("[VN] No DialogueRunner found.");
+            return;
+        }
+
+        // Register global command handlers (no [YarnCommand] attributes elsewhere)
+        runner.AddCommandHandler<string, string>("go_to_rhythm", HandleGoToRhythm);
+        runner.AddCommandHandler<string>("unlock_song", HandleUnlockSong);
+        runner.AddCommandHandler<string>("unlock_gallery", HandleUnlockGallery);
+    }
+
+    // --- Commands ---
+
+    private YarnTask HandleGoToRhythm(string songId, string returnNode)
+    {
+        var song = FindSong(songId);
+        if (!song)
+        {
+            Debug.LogError($"[VN] go_to_rhythm: song '{songId}' not found.");
+            return YarnTask.CompletedTask;
+        }
+
+        // Remember where VN should resume
+        SceneFlow.PendingVNStartNode = returnNode;
+
+        // Your existing scene handoff (single load, no additive ghost):
+        SceneFlow.GoToRhythmFromVNAsync(song, returnNode);
+
+        return YarnTask.CompletedTask;
+    }
+
+    private YarnTask HandleUnlockSong(string id)
+    {
+        PlayerPrefs.SetInt($"song_unlock.{id}", 1);
+        PlayerPrefs.Save();
+        Debug.Log($"[VN] unlock_song '{id}'");
+        return YarnTask.CompletedTask;
+    }
+
+    private YarnTask HandleUnlockGallery(string id)
+    {
+        var ok = GallerySaves.Unlock(id);
+        PlayerPrefs.Save();
+        Debug.Log($"[VN] unlock_gallery '{id}' -> {ok}");
+        return YarnTask.CompletedTask;
+    }
+
+    // --- Helpers ---
+
+    private SongInfo FindSong(string id)
+    {
+        if (!songs || songs.songs == null) return null;
+
+        foreach (var s in songs.songs)
+        {
             if (!s) continue;
-            if (string.Equals(s.name,  id, System.StringComparison.OrdinalIgnoreCase)) return s;
+            var sid = string.IsNullOrEmpty(s.SongId) ? s.name : s.SongId;
+
+            if (string.Equals(sid, id, System.StringComparison.OrdinalIgnoreCase)) return s;
             if (string.Equals(s.title, id, System.StringComparison.OrdinalIgnoreCase)) return s;
+            if (string.Equals(s.name, id, System.StringComparison.OrdinalIgnoreCase)) return s;
         }
         return null;
-    }
-
-    
-    [YarnCommand("sfx")]
-    public void PlaySfx(string clipName)
-    {
-        // Hook into your SFX system
-        // e.g. AudioHub.Play(clipName);
-        Debug.Log($"[Yarn] SFX: {clipName}");
-    }
-
-    [YarnCommand("bg")]
-    public void SetBackground(string bgId)
-    {
-        // Swap a background sprite, play a transition, etc.
-        Debug.Log($"[Yarn] BG → {bgId}");
-    }
-
-    // <<go_to_rhythm "songId" "ReturnNode">>
-    [YarnCommand("go_to_rhythm")]
-    public void GoToRhythm(string songId, string returnNode = null)
-    {
-        var song = Find(songId);
-        if (!song) { Debug.LogError($"[Yarn] Song id '{songId}' not found."); return; }
-        _ = SceneFlow.GoToRhythmFromVNAsync(song, returnNode);
-    }
-
-    // Optional helper: <<resume "NodeName">>
-    [YarnCommand("resume")]
-    public void Resume(string nodeName)
-    {
-        SceneFlow.PendingVNStartNode = nodeName;
-    }
-
-    [YarnCommand("pause_menu")]
-    public void PauseMenu()
-    {
-        // If your VN has a ScreenController in-scene, push the pause screen ID.
-        // ScreenController.Instance?.Push(MenuIds.VNPause);
-        Debug.Log("[Yarn] Pause menu requested");
-    }
-
-    [YarnCommand("unlock_gallery")]
-    public void UnlockGallery(string id)
-    {
-        // Call your gallery unlock system
-        Debug.Log($"[Yarn] Unlock gallery: {id}");
-    }
-
-    [YarnCommand("unlock_song")]
-    public void UnlockSong(string id)
-    {
-        // Call your song unlock system
-        Debug.Log($"[Yarn] Unlock song: {id}");
     }
 }

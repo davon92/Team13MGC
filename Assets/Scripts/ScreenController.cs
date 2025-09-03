@@ -90,7 +90,7 @@ public class ScreenController : MonoBehaviour
 
     void OnEnable()
     {
-        Debug.Log($"[SC] ENABLE name={name} scene={gameObject.scene.name} active={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} root={transform.root.name}");
+        //Debug.Log($"[SC] ENABLE name={name} scene={gameObject.scene.name} active={UnityEngine.SceneManagement.SceneManager.GetActiveScene().name} root={transform.root.name}");
         var active = SceneManager.GetActiveScene();
 
         if (s_active == null)

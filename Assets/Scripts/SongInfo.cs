@@ -8,7 +8,17 @@ public class SongInfo : ScriptableObject
     public string title;
     public string artist;
     public Sprite jacket;
-
+    [Header("Identity")]
+    [SerializeField] private string id;
+    public string SongId => string.IsNullOrEmpty(id) ? name : id;
+    
+#if UNITY_EDITOR
+    void OnValidate() {
+        // Default the id to the asset name if it’s empty.
+        if (string.IsNullOrEmpty(id)) id = name;
+    }
+#endif
+    
     [Header("Audio / Chart")]
     [Tooltip("Koreographer chart that defines all timing/event tracks.")]
     public Koreography koreography;

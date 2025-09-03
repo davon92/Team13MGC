@@ -42,7 +42,7 @@ public static class SceneFlow
     }
     
     public static RhythmRequest PendingRhythm { get; private set; }
-    public static RhythmResult PendingRhythmResult { get; private set; }
+    public static RhythmResult PendingRhythmResult { get; set; }
     public static RhythmResult LastRhythmResult    { get; private set; }
 
     public static string PendingVNStartNode { get; set; }

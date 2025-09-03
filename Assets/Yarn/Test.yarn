@@ -1,0 +1,30 @@
+title: Prologue
+---
+<<declare $lastGrade = "" as string>>
+<<declare $lastScore = 0 as number>>
+<<declare $cleared   = false as bool>>
+<<declare $maxCombo  = 0 as number>>
+<<declare $songId    = "" as string>>
+
+Hello! Choose an action.
+
+-> Play the tutorial song
+    <<go_to_rhythm "tutorial" "AfterSong">>
+-> End
+    <<jump End>>
+===
+
+title: AfterSong
+---
+Back from rhythm. song={$songId}  grade={$lastGrade}  score={$lastScore}  maxCombo={$maxCombo}  cleared={$cleared}
+
+-> Back to Start
+    <<jump Start>>
+-> End
+    <<jump End>>
+===
+
+title: End
+---
+Done.
+===

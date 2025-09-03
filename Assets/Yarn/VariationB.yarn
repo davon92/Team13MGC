@@ -1,0 +1,118 @@
+// DialogueNodeStart DeclareGlobalVariables
+title: DeclareGlobalVariables
+---
+<<declare $MadeDecision = false>>
+<<declare $Number = 0>>
+<<declare $Text = "NoText">>
+<<declare $BoolValue = false>>
+<<jump Tutorial>>
+===
+// DialogueNodeEnd DeclareGlobalVariables
+
+// IfNodeStart Tutorial
+title: Tutorial
+---
+<<if $MadeDecision == true>>
+  <<jump EndDialogue>>
+<<else>>
+  <<jump ExplainAFewThings>>
+<<endif>>
+===
+// IfNodeEnd Tutorial
+
+// DialogueNodeStart ExplainAFewThings
+title: ExplainAFewThings
+---
+Narrator: Hi, this dialogue was created entirely with DialogueElements.
+Narrator: Variables, tags, and commands can be declared and edited in the upper-left menu entries.
+Narrator: You can export a graph by clicking the Export Yarn button in the upper-right corner. 
+Narrator: Auto-arranging of graph nodes is still not working properly.
+Narrator: This step is optional, but use Refresh & Save if the graph node titles haven't updated to the correct names.
+Narrator: Now, let us set a few variables
+<<jump VarSetNode>>
+===
+// DialogueNodeEnd ExplainAFewThings
+
+// VariableSetNodeStart VarSetNode
+title: VarSetNode
+---
+<<set $Number = 2>>
+<<set $Text = "Tutorial">>
+<<set $BoolValue = true>>
+<<jump OutcomeVarSet>>
+===
+// VariableSetNodeEnd VarSetNode
+
+// DialogueNodeStart OutcomeVarSet
+title: OutcomeVarSet
+---
+{$Text}: The Variabbles are set!
+<<jump DecisionNodeThreeOptions>>
+===
+// DialogueNodeEnd OutcomeVarSet
+
+// DecisionNodeStart DecisionNodeThreeOptions
+// YarnDecisionInfo: OriginalOptions=3; Options=[Choose A: $BoolValue == true, Choose B: none, Choose C: none]
+title: DecisionNodeThreeOptions
+---
+<<if $BoolValue == true>>
+-> Choose B
+    <<jump ChoseB>>
+-> Choose C
+    <<jump ChoseC>>
+-> Choose A
+    <<jump ChoseA>>
+<<else>>
+-> Choose B
+    <<jump ChoseB>>
+-> Choose C
+    <<jump ChoseC>>
+<<endif>>
+===
+// DecisionNodeEnd DecisionNodeThreeOptions
+
+// DialogueNodeStart ChoseA
+title: ChoseA
+---
+{$Text}: Well Done!
+<<jump SetNodeMadeDecision>>
+===
+// DialogueNodeEnd ChoseA
+
+// DialogueNodeStart ChoseB
+title: ChoseB
+---
+{$Text}: Good Choice
+<<jump SetNodeMadeDecision>>
+===
+// DialogueNodeEnd ChoseB
+
+// DialogueNodeStart ChoseC
+title: ChoseC
+---
+{$Text}: Excellent
+<<jump SetNodeMadeDecision>>
+===
+// DialogueNodeEnd ChoseC
+
+// VariableSetNodeStart SetNodeMadeDecision
+title: SetNodeMadeDecision
+---
+<<set $MadeDecision = true>>
+<<jump Tutorial>>
+===
+// VariableSetNodeEnd SetNodeMadeDecision
+
+// DialogueNodeStart EndDialogue
+title: EndDialogue
+---
+{$Text}: As you can see, you can create an entire dialogue within a single node. #RegisteredExampleInlineTag
+{$Text}: ...and this approach feels more like Game Creator 2
+{$Text}: However, this approach is often not optimal, #NotRegisteredExampleInlineTag
+{$Text}: as nested lists can lead to editor performance issues
+{$Text}: especially when the Unity Editor has to render numerous expanded elements in a dialogue node.
+{$Text}: An alternative approach is demonstrated in VariationB.
+<<run "DeactivateGameObject">>
+<<jump Tutorial>>
+===
+// DialogueNodeEnd EndDialogue
