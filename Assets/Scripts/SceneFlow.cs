@@ -89,8 +89,8 @@ public static class SceneFlow
             {
                 var op = UnityEngine.SceneManagement.SceneManager.LoadSceneAsync(VNSceneName, UnityEngine.SceneManagement.LoadSceneMode.Single);
                 while (!op.isDone) await System.Threading.Tasks.Task.Yield();
-                if (!string.IsNullOrWhiteSpace(req?.returnYarnNode) && VNController.Instance != null)
-                    VNController.Instance.StartConversation(req.returnYarnNode);
+                if (!string.IsNullOrWhiteSpace(req?.returnYarnNode) && VNBootstrap.Instance != null)
+                    VNBootstrap.Instance.StartConversation(req.returnYarnNode);
             }
 
             if (Fade.Instance != null)

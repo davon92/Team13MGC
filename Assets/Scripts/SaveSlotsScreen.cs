@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
@@ -19,6 +20,7 @@ public class SaveSlotsScreen : MonoBehaviour, IUIScreen
     [SerializeField] GameObject firstSelected;
     [SerializeField] ScreenController screens;
     [SerializeField] Button backButton;
+    [SerializeField] TMP_Text text;
 
     [Header("List")]
     [SerializeField] SaveSlotView itemPrefab;
@@ -42,7 +44,7 @@ public class SaveSlotsScreen : MonoBehaviour, IUIScreen
     {
         var a = args as Args;
         _mode = a?.mode ?? Mode.Load;
-
+        text.text = $"{_mode.ToString()} Game";
         BuildIfNeeded();
         RefreshAll(a?.fallbackChapterId ?? "Prologue");
 

@@ -10,6 +10,7 @@ public class VNPauseScreen : MonoBehaviour, IUIScreen
     [SerializeField] GameObject firstSelected;
     [SerializeField] ScreenController screens;
     [SerializeField] Button saveButton;
+    [SerializeField] Button loadButton;
     [SerializeField] Button continueButton;
     [SerializeField] Button returnButton;
 
@@ -20,8 +21,17 @@ public class VNPauseScreen : MonoBehaviour, IUIScreen
     void Awake()
     {
         if (saveButton)     saveButton.onClick.AddListener(OnSave);
+        if (loadButton) loadButton.onClick.AddListener(OnLoad);
         if (continueButton) continueButton.onClick.AddListener(OnContinue);
         if (returnButton)   returnButton.onClick.AddListener(OnReturnToMenu);
+    }
+
+    private void OnLoad()
+    {
+        screens?.Push(MenuIds.SaveLoad, new SaveSlotsScreen.Args
+        {
+            mode = SaveSlotsScreen.Mode.Load
+        });
     }
 
     public void OnShow(object args)

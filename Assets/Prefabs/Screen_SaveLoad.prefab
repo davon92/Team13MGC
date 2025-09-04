@@ -1159,6 +1159,7 @@ MonoBehaviour:
   firstSelected: {fileID: 8519175584541311008}
   screens: {fileID: 0}
   backButton: {fileID: 1784739913280152672}
+  text: {fileID: 7386787614989448543}
   itemPrefab: {fileID: 7259791867147403188, guid: 60ff30afb028d1c4fbeb58e980bdd1d5, type: 3}
   content: {fileID: 5244556516907854649}
   slotsShown: 6
