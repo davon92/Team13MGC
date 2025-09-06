@@ -78,6 +78,15 @@ public class KnobLaneController : MonoBehaviour
     float sumScore, maxScore;
     bool headJudged = false;
     
+    // --- Mouse absolute (Trombone-like) ---
+    [Header("Mouse Absolute (Trombone style)")]
+    [SerializeField] bool  mouseAbsolute = true;           // use screen Y as target 0..1
+    [SerializeField] bool  mouseAbsRequirePress = false;   // only while LMB down (optional)
+    [SerializeField, Range(0.0f, 30f)]
+    float mouseAbsLerpPerSec = 12f;                        // how quickly we follow target (0=instant)
+    [SerializeField] bool  invertMouseY = false;           // if you want up=down instead
+
+    
     // --- DEBUG: per-frame readouts ---
     public float DebugLastTick { get; private set; }          // 0, 0.4, 0.7, 1
     public float DebugBeatsThisFrame { get; private set; }    // beats advanced this frame on hit timeline
@@ -157,8 +166,8 @@ public class KnobLaneController : MonoBehaviour
 
     float _engagedTimer; // counts down after movement
     
-    
-
+    bool _useRotaryFrozen;
+    bool UseRotaryNow() => _useRotaryFrozen;
     float Add01()
     {
         if (!haveLane) return 0f;
@@ -210,14 +219,13 @@ public class KnobLaneController : MonoBehaviour
         return Judgement.Miss;
     }
     
-    void Awake()
-    {
+    void Awake() {
         if (!playerInput) playerInput = FindFirstObjectByType<PlayerInput>();
         var actions = playerInput ? playerInput.actions : null;
 
-        leftStick    = actions?.FindAction("LeftStick", true);
-        pointerPos   = actions?.FindAction("KnobPointer", false);
-        pointerPress = actions?.FindAction("KnobPointerPress", false);
+        leftStick    = actions?.FindAction("LeftStick",         true);
+        pointerPos   = actions?.FindAction("KnobPointer",       false);
+        pointerPress = actions?.FindAction("KnobPointerPress",  false);
 
         if (!scoreTracker) scoreTracker = FindFirstObjectByType<ScoreTracker>() ?? FindObjectOfType<ScoreTracker>();
     }
@@ -240,6 +248,23 @@ public class KnobLaneController : MonoBehaviour
         pointerPress?.Disable();
     }
     
+    bool TryGetAbsoluteMouseTarget(out float target01) {
+        target01 = 0.5f;
+        if (pointerPos == null) return false;
+        var screen = pointerPos.ReadValue<Vector2>();
+
+        // 0 at bottom, 1 at top (Canvas overlay or not—screen height works fine)
+        float y01 = Mathf.Clamp01(screen.y / Mathf.Max(1f, (float)Screen.height));
+        if (invertMouseY) y01 = 1f - y01;
+
+        // optional gate: only when mouse held
+        if (mouseAbsRequirePress && !(pointerPress != null && pointerPress.IsPressed()))
+            return false;
+
+        target01 = y01;
+        return true;
+    }
+    
     void OnStyleChanged(InputGlyphStyle _)
     {
         if (!knobIcon) return;
@@ -249,6 +274,7 @@ public class KnobLaneController : MonoBehaviour
 
     void Start()
     {
+        _useRotaryFrozen = (SettingsService.EffectiveGlyphStyle != InputGlyphStyle.KeyboardMouse);
         _prevNowH      = conductor.NowForHit;
         _prevPlayer01  = 0f;
         _engagedTimer  = 0f;
@@ -310,18 +336,31 @@ public class KnobLaneController : MonoBehaviour
             return;
         }
 
-        // 1) Read rotary delta and integrate to 0..1
-        float deltaTurns = ReadRotaryTurnsThisFrame();
+// --- 1) Read input and update player01 ---
+        float deltaTurns = 0f;                 // rotary-only path
+        float before01   = player01;
 
-        float sign = clockwiseIncreases ? 1f : -1f;
-        if (turnsForFullTravel <= 0f) turnsForFullTravel = 1f;
+        if (UseRotaryNow())
+        {
+            // Gamepad rotary (left stick circular motion)
+            deltaTurns = ReadRotaryTurnsThisFrame();
+            float sign = clockwiseIncreases ? +1f : -1f;
+            if (turnsForFullTravel <= 0f) turnsForFullTravel = 1f;
+            player01 = Mathf.Clamp01(player01 + sign * (deltaTurns / turnsForFullTravel));
+        }
+        else
+        {
+            // Mouse absolute Y (whole screen). No scroll wheel.
+            if (TryGetAbsoluteMouseTarget(out var target01)) {
+                float t = 1f - Mathf.Exp(-mouseAbsLerpPerSec * Time.unscaledDeltaTime);
+                player01 = Mathf.Lerp(player01, target01, t);
+            }
+        }
 
-        float before01 = player01;
-        player01 = Mathf.Clamp01(player01 + sign * (deltaTurns / turnsForFullTravel));
         float delta01 = player01 - before01;
 
-        // movement gate: movement now keeps a short "hot" timer
-        bool movedNow = Mathf.Abs(delta01) >= minDelta01ForEngagement || Mathf.Abs(deltaTurns) > 0.0001f;
+    // movement gate (keeps “engaged” hot for a short time)
+        bool movedNow = EngagedByMovementThisFrame(delta01, deltaTurns);
         if (movedNow) _engagedTimer = engagedHoldSeconds;
         else          _engagedTimer = Mathf.Max(0f, _engagedTimer - Time.unscaledDeltaTime);
         bool engaged = _engagedTimer > 0f;
@@ -483,8 +522,7 @@ public class KnobLaneController : MonoBehaviour
         _prevNowH = conductor.NowForHit;
         _prevPlayer01 = player01;
     }
-
-    // Compute required direction from the laser slope: +1 up, -1 down, 0 = flat/any.
+   
     // Compute required direction from the laser slope: +1 up, -1 down, 0 = flat/any.
     int RequiredDirFromSlope(float slopePerBeat, float thresh = 0.02f)
     {
@@ -542,38 +580,7 @@ public class KnobLaneController : MonoBehaviour
     float ReadRotaryTurnsThisFrame()
     {
         float turns = 0f;
-
-        // Mouse circular drag
-        if (pointerPos != null && rotarySurface)
-        {
-            bool engage = !requirePressToRotate || (pointerPress != null && pointerPress.IsPressed());
-            if (engage)
-            {
-                Vector2 screen = pointerPos.ReadValue<Vector2>();
-                if (RectTransformUtility.ScreenPointToLocalPointInRectangle(rotarySurface, screen, null, out var local))
-                {
-                    var rr = rotarySurface.rect;
-                    Vector2 center = new((rr.xMin + rr.xMax) * 0.5f, (rr.yMin + rr.yMax) * 0.5f);
-                    Vector2 dir = local - center;
-                    float r = dir.magnitude;
-
-                    if (r >= minMouseRadius)
-                    {
-                        float ang = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg; // -180..180
-                        if (!mouseTracking) { prevMouseAngle = ang; mouseTracking = true; }
-                        else
-                        {
-                            float d = Mathf.DeltaAngle(prevMouseAngle, ang);
-                            if (Mathf.Abs(d) < angularDeadzoneDeg) d = 0f;
-                            prevMouseAngle = ang;
-                            turns += d / 360f;
-                        }
-                    }
-                }
-            }
-            else mouseTracking = false;
-        }
-
+        
         // Gamepad circular motion
         if (leftStick != null)
         {
