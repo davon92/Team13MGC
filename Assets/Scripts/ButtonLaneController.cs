@@ -30,6 +30,9 @@ public class ButtonLaneController : MonoBehaviour
 
     readonly Queue<RhythmTypes.ButtonNote> upcoming = new();
     readonly List<NoteObject> active = new();
+    
+    private InputGlyphStyle _songStyle;
+    private InputGlyphSet   _songGlyphs;
 
     float spawnX, hitX, despawnX;
     int Stravel;
@@ -40,6 +43,9 @@ public class ButtonLaneController : MonoBehaviour
         btnY.performed += OnY; btnY.Enable();
         btnB.performed += OnB; btnB.Enable();
         btnX.performed += OnX; btnX.Enable();
+        
+        _songStyle  = SettingsService.EffectiveGlyphStyle;
+        _songGlyphs = GlyphLibrary.Get(_songStyle);
     }
 
     void OnDisable()
@@ -161,7 +167,7 @@ public class ButtonLaneController : MonoBehaviour
         
         if (no.Offscreen) no.Recycle();
         
-        no.SetStyleForButton(data.button);
+        no.SetGlyphsAndStyle(_songGlyphs, data.button);
         return no;
     }
 

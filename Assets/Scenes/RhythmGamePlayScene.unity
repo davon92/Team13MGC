@@ -434,6 +434,7 @@ MonoBehaviour:
   toleranceFrom: {fileID: 432377828}
   enterGraceMs: 60
   exitGraceMs: 80
+  knobIcon: {fileID: 528930090}
   scoreTracker: {fileID: 1132293417}
   playerInput: {fileID: 1132293416}
   minDelta01ForEngagement: 0.0025

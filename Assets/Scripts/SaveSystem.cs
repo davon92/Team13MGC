@@ -113,4 +113,11 @@ public static class SaveSystem
         QueueLoadSlot(s);
         return true;
     }
+    
+    // --- Lightweight key-value helpers (global flags like song unlocks) ---
+    public static int GetInt(string key, int defaultValue = 0) => PlayerPrefs.GetInt(key, defaultValue);
+    public static void SetInt(string key, int value) { PlayerPrefs.SetInt(key, value); }
+    public static string GetString(string key, string defaultValue = "") => PlayerPrefs.GetString(key, defaultValue);
+    public static void SetString(string key, string value) { PlayerPrefs.SetString(key, value); }
+    public static void Save() { PlayerPrefs.Save(); }
 }

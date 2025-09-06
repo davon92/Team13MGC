@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -28,7 +29,9 @@ public partial class SettingsScreen : MonoBehaviour, IUIScreen
     [SerializeField] private Slider         mouseSensitivity;
     [SerializeField] private TMP_Dropdown   resolutionDropdown;
     [SerializeField] private Slider         masterVolume;
-
+    // NEW: Button UI / Controller Icon style
+    [SerializeField] private TMP_Dropdown   glyphStyleDropdown;
+    
     // The underline group for the tab buttons
     [SerializeField] private UISelectScalerGroup leftNavGroup;
 
@@ -38,14 +41,22 @@ public partial class SettingsScreen : MonoBehaviour, IUIScreen
     void Awake()
     {
         if (!leftNavGroup) leftNavGroup = Root.GetComponentInChildren<UISelectScalerGroup>(true);
-
-        // Ensure underline is pinned to a tab even if selection moves into panel
         leftNavGroup?.SetKeepLastWhenOutside(true);
 
-        // Pin underline on select (works for mouse & controller) and, if clicked, move focus into panel
-        WireTab(tabGameplay,   Tab.Gameplay,   mouseSensitivity ? mouseSensitivity.gameObject : null);
-        WireTab(tabGraphics,   Tab.Graphics,   resolutionDropdown ? resolutionDropdown.gameObject : null);
-        WireTab(tabAudio,      Tab.Audio,      masterVolume ? masterVolume.gameObject : null);
+        // Tabs (existing)
+        WireTab(tabGameplay, Tab.Gameplay, mouseSensitivity ? mouseSensitivity.gameObject : null);
+        WireTab(tabGraphics, Tab.Graphics, resolutionDropdown ? resolutionDropdown.gameObject : null);
+        WireTab(tabAudio,    Tab.Audio,    masterVolume ? masterVolume.gameObject : null);
+
+        // NEW: build dropdown once
+        if (glyphStyleDropdown)
+        {
+            glyphStyleDropdown.ClearOptions();
+            glyphStyleDropdown.AddOptions(new List<string> {
+                "Auto", "Xbox", "PlayStation", "Nintendo", "Keyboard & Mouse"
+            });
+            glyphStyleDropdown.onValueChanged.AddListener(OnGlyphStyleChanged);
+        }
     }
 
     void WireTab(Button tabBtn, Tab tab, GameObject panelFocus)
@@ -91,6 +102,9 @@ public partial class SettingsScreen : MonoBehaviour, IUIScreen
         // Show the current tab’s panel, but don't move selection into it
         ShowTab(currentTab, moveFocusToPanel: false);
 
+        if (glyphStyleDropdown)
+            glyphStyleDropdown.SetValueWithoutNotify((int)SettingsService.Gameplay.glyphStyle);
+        
         // Also pin underline to the tab that’s currently selected (so it never disappears)
         var currentTabBtn = currentTab switch
         {
@@ -99,6 +113,13 @@ public partial class SettingsScreen : MonoBehaviour, IUIScreen
             _            => tabAudio
         };
         if (currentTabBtn) leftNavGroup?.ForceSelect(currentTabBtn.transform, true);
+    }
+    
+    void OnGlyphStyleChanged(int index)
+    {
+        SettingsService.Gameplay.glyphStyle = (InputGlyphStyle)index;
+        SettingsService.ApplyGameplay(); // notifies listeners
+        SettingsService.Save();          // persist immediately (optional)
     }
 
     public void OnHide() {}

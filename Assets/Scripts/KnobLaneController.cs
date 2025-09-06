@@ -2,6 +2,7 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 /// Rotary (Sound Voltex–style) knob controller.
 /// Clockwise increases the knob; counter-clockwise decreases it.
@@ -44,6 +45,9 @@ public class KnobLaneController : MonoBehaviour
     [SerializeField] float exitGraceMs  = 80f;
     int _prevNowH;
     public float GoodWindow => Mathf.Min(1f, goodErr * generosity + Add01());
+    
+    [Header("Hint Icon (optional)")]
+    [SerializeField] Image knobIcon; // NEW: e.g., a small icon near the lane
     
     [SerializeField] ScoreTracker scoreTracker;
     public int TotalTraceHeads { get; private set; }
@@ -152,6 +156,8 @@ public class KnobLaneController : MonoBehaviour
     float engagedHoldSeconds = 0.15f;
 
     float _engagedTimer; // counts down after movement
+    
+    
 
     float Add01()
     {
@@ -221,12 +227,24 @@ public class KnobLaneController : MonoBehaviour
         leftStick?.Enable();
         pointerPos?.Enable();
         pointerPress?.Enable();
+        
+        var style  = SettingsService.EffectiveGlyphStyle;
+        var glyphs = GlyphLibrary.Get(style);
+        if (knobIcon && glyphs && glyphs.knobIcon)
+            knobIcon.sprite = glyphs.knobIcon;
     }
     void OnDisable()
     {
         leftStick?.Disable();
         pointerPos?.Disable();
         pointerPress?.Disable();
+    }
+    
+    void OnStyleChanged(InputGlyphStyle _)
+    {
+        if (!knobIcon) return;
+        var g = GlyphLibrary.Current;
+        if (g && g.knobIcon) knobIcon.sprite = g.knobIcon;  // Mouse for KBM, LeftStick for pads
     }
 
     void Start()

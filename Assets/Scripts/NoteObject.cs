@@ -9,7 +9,8 @@ public class NoteObject : MonoBehaviour
     [Header("Wiring")]
     [SerializeField] RectTransform rt;
     [SerializeField] Image img;
-
+    private InputGlyphSet _frozenGlyphs;                   // <- set once per song
+    
     [Header("Visuals")]
     [SerializeField] NoteStyleSet style;           // sprites/colors per button
     [SerializeField] bool setNativeSize = false;
@@ -31,6 +32,9 @@ public class NoteObject : MonoBehaviour
     bool _dimmed;
     public bool Dimmed => _dimmed;
     
+    // NEW: remember which face this note is
+    RhythmTypes.FaceButton _button; // A/B/X/Y
+    
     public void ApplyDimLook()
     {
         if (_dimmed) return;
@@ -40,6 +44,11 @@ public class NoteObject : MonoBehaviour
             img.color = new Color(c.r * missDim, c.g * missDim, c.b * missDim, c.a * missAlpha);
         }
         _dimmed = true;
+    }
+    
+    public void SetGlyphSnapshot(InputGlyphSet glyphs)     // <- call before styling
+    {
+        _frozenGlyphs = glyphs;
     }
 
     void Awake()
@@ -73,6 +82,26 @@ public class NoteObject : MonoBehaviour
         if (n.img) n.img.color = n.baseColor;   // ensure clean tint on reuse
         return n;
     }
+    
+    public void SetGlyphsAndStyle(InputGlyphSet glyphs, RhythmTypes.FaceButton b)
+    {
+        _frozenGlyphs = glyphs;
+        SetStyleForButton(b); // your existing method; see D below
+    }
+    
+    void ApplyGlyphSprite(RhythmTypes.FaceButton b)
+    {
+        if (!img || _frozenGlyphs == null) return;   // <- don't pull from live/global
+
+        switch (b)
+        {
+            case RhythmTypes.FaceButton.A: img.sprite = _frozenGlyphs.faceSouth; break;
+            case RhythmTypes.FaceButton.B: img.sprite = _frozenGlyphs.faceEast;  break;
+            case RhythmTypes.FaceButton.X: img.sprite = _frozenGlyphs.faceWest;  break;
+            case RhythmTypes.FaceButton.Y: img.sprite = _frozenGlyphs.faceNorth; break;
+        }
+        if (setNativeSize && img.sprite) img.SetNativeSize();
+    }
 
     public void Recycle()
     {
@@ -101,15 +130,18 @@ public class NoteObject : MonoBehaviour
     // sprite + color from your NoteStyleSet (also caches baseColor)
     public void SetStyleForButton(RhythmTypes.FaceButton b)
     {
-        if (!img || !style) return;
+        _button = b; // NEW: remember for live updates
 
-        img.sprite = style.GetSprite(b);
-        if (setNativeSize) img.SetNativeSize();
+        // 1) color from your NoteStyleSet (unchanged)
+        if (style != null) {
+            baseColor         = style.GetColor(b);
+            if (img) img.color = baseColor;
+        }
 
-        baseColor        = style.GetColor(b);
-        img.color        = baseColor;
-        img.raycastTarget = false;
+        // 2) sprite from the active glyph profile (NEW)
+        ApplyGlyphSprite(b);
 
+        if (img) img.raycastTarget = false;
         missApplied = false;
     }
 

@@ -8,6 +8,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
+using System.Linq;
 
 public class SongSelectScreen : MonoBehaviour, IUIScreen
 {
@@ -23,7 +24,9 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     
     [Header("Data")]
     [SerializeField] SongDatabase database;
-    public SongInfo Current => database[currentSong];
+    public SongInfo Current =>(VisibleCount > 0 && currentSong >= 0 && currentSong < VisibleCount)
+        ? _visible[currentSong]
+        : null;
     
     [Header("Load Transition")]
     [SerializeField] string gameplaySceneName = "RhythmGamePlayScene";
@@ -91,6 +94,11 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     int currentSong;            // logical index into database
     int centerIdx => visibleCount / 2;
     float RowStep => itemHeight + spacing;
+    
+    List<SongInfo> _visible = new List<SongInfo>();
+    int VisibleCount => _visible.Count;
+
+
 
     void Awake()
     {
@@ -157,48 +165,57 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
     // Build or rebuild the ring of tiles and bind data around currentSong
     void BuildList()
     {
-        // clear existing
+        // 1) Build filtered working set once
+        _visible = (database != null && database.songs != null)
+            ? database.songs.Where(ShouldAppear).ToList()
+            : new List<SongInfo>();
+
+        // Clamp selection if needed
+        if (VisibleCount == 0) currentSong = 0;
+        else currentSong = Mathf.Clamp(currentSong, 0, VisibleCount - 1);
+
+        // 2) Clear old tiles as you already do
         for (int i = tiles.Count - 1; i >= 0; i--)
         {
             if (tiles[i]) Destroy(tiles[i].gameObject);
         }
         tiles.Clear();
 
-        for (int i = 0; i < visibleCount; i++)
+        // Decide how many rows to show (don’t exceed available items)
+        int rows = Mathf.Max(1, visibleCount);
+
+        for (int i = 0; i < rows; i++)
         {
             var t  = Instantiate(tilePrefab, listRoot);
             var rt = (RectTransform)t.transform;
 
-            // Full-width row we position manually (no LayoutGroup)
             rt.anchorMin = new Vector2(0f, 1f);
             rt.anchorMax = new Vector2(1f, 1f);
-
-            // IMPORTANT: pivot at (1, 0.5) so the tile grows to the LEFT (IIDX feel)
-            rt.pivot = new Vector2(1f, 0.5f);
-
-            // Lock the row’s height so RowStep math is exact
+            rt.pivot     = new Vector2(1f, 0.5f);
             rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, itemHeight);
-
-            // Place row i exactly: y = -i * (itemHeight + spacing)
             rt.anchoredPosition = new Vector2(0f, -i * RowStep);
 
             tiles.Add(t);
         }
 
         RebindAll();
-        _tweenFocused = null; // reset any in-flight focus tracking
+        _tweenFocused = null;
     }
 
     // Bind ring contents: center = currentSong, others wrap around DB
     void RebindAll()
     {
-        if (database == null || database.Count == 0) return;
+        if (VisibleCount == 0) {
+            // Optional: show “No songs available” state on tiles[0]
+            foreach (var tv in tiles) tv.Bind(null);
+            return;
+        }
 
         for (int i = 0; i < tiles.Count; i++)
         {
             int delta = i - centerIdx;
-            int idx = WrapIndex(currentSong + delta, database.Count);
-            tiles[i].Bind(database[idx]);
+            int idx   = WrapIndex(currentSong + delta, VisibleCount);
+            tiles[i].Bind(_visible[idx]);
             tiles[i].SetFocusWeight(i == centerIdx ? 1f : 0f); // instant
         }
     }
@@ -297,7 +314,7 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
                 RotateTilesAndRebind(dir);
 
                 // logical selection moved
-                currentSong = WrapIndex(currentSong + dir, database.Count);
+                currentSong = WrapIndex(currentSong + dir, VisibleCount);
                 UpdateLeftPanel();
 
                 // snap one tile focused
@@ -552,5 +569,20 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
             preview.Stop();
             preview.volume = 1f; // reset for next start
         }
+    }
+    
+    bool IsUnlocked(SongInfo s)
+    {
+        // unlockedByDefault OR persisted flag in SaveSystem
+        if (s.unlockedByDefault) return true;
+        return SaveSystem.GetInt($"song.unlock.{s.SongId}", 0) == 1;
+    }
+
+    bool ShouldAppear(SongInfo s)
+    {
+        if (!s) return false;
+        if (!s.visibleInSongSelect) return false; // story-only, never listed
+        if (!IsUnlocked(s)) return false;         // hide until unlocked
+        return true;
     }
 }

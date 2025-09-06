@@ -8,17 +8,18 @@ public class SongInfo : ScriptableObject
     public string title;
     public string artist;
     public Sprite jacket;
-    [Header("Identity")]
+
+    [Tooltip("Stable ID used everywhere (Yarn, saves, unlocks). Defaults to asset name if empty).")]
     [SerializeField] private string id;
     public string SongId => string.IsNullOrEmpty(id) ? name : id;
-    
+
 #if UNITY_EDITOR
-    void OnValidate() {
-        // Default the id to the asset name if it’s empty.
+    void OnValidate()
+    {
         if (string.IsNullOrEmpty(id)) id = name;
     }
 #endif
-    
+
     [Header("Audio / Chart")]
     [Tooltip("Koreographer chart that defines all timing/event tracks.")]
     public Koreography koreography;
@@ -48,5 +49,12 @@ public class SongInfo : ScriptableObject
     [Range(0,1)] public float chaos;
     [Range(0,1)] public float air;
 
-    public AudioClip Music => musicClip ? musicClip : koreography != null ? koreography.SourceClip : null;
+    [Header("Availability")]
+    [Tooltip("If false, this song never appears in Song Select (story-only or hidden content).")]
+    public bool visibleInSongSelect = true;
+
+    [Tooltip("If true, song is usable even with zero unlocks. If false, it must be unlocked first.")]
+    public bool unlockedByDefault = true;
+
+    public AudioClip Music => musicClip ? musicClip : (koreography ? koreography.SourceClip : null);
 }
