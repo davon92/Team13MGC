@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 using Yarn.Unity;
 
 public class VNBootstrap : MonoBehaviour
@@ -18,27 +19,28 @@ public class VNBootstrap : MonoBehaviour
 
     public static VNBootstrap Instance { get; private set; }
     public DialogueRunner Runner => runner;
+    [Header("Initial Visual State (optional)")]
+    [SerializeField] CanvasGroup linePresenterGroup;    // the CanvasGroup on your Line Presenter
+    [SerializeField] CanvasGroup optionsPresenterGroup; // the CanvasGroup on your Options Presenter
 
-    void Awake()
-    {
+    void Awake() {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
-
         if (!runner) runner = FindFirstObjectByType<DialogueRunner>();
     }
 
-    void Start()
-    {
-        if (!startAutomatically || runner == null) return;
+    IEnumerator Start() {
+        if (!startAutomatically || runner == null) yield break;
+        yield return null; // wait a frame so presenters are active
+        // 2) Ensure a clean starting visibility (prevents the “options on top” flash)
+        if (linePresenterGroup)    linePresenterGroup.alpha    = 0f; // LinePresenter will fade itself in
+        if (optionsPresenterGroup) optionsPresenterGroup.alpha = 0f; // keep options hidden until Yarn shows options
         StartConversation(ResolveStartNode());
     }
 
-    /// <summary>Starts a Yarn conversation at the given node (or the runner's Start Node if null/empty).</summary>
-    public void StartConversation(string nodeName = null)
-    {
-        if (runner == null) { Debug.LogError("[VNBootstrap] DialogueRunner missing."); return; }
+    public void StartConversation(string nodeName = null) {
+        if (runner == null) return;
         if (runner.IsDialogueRunning) runner.Stop();
-
         var start = string.IsNullOrWhiteSpace(nodeName) ? runner.startNode : nodeName;
         runner.StartDialogue(start);
 #if UNITY_EDITOR

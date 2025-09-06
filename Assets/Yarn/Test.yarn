@@ -16,14 +16,17 @@ Hello! Choose an action.
 
 title: AfterSong
 ---
-Back from rhythm. song={$songId}  grade={$lastGrade}  score={$lastScore}  maxCombo={$maxCombo}  cleared={$cleared}
+Back from rhythm. song={$songId} grade={$lastGrade} score={$lastScore} maxCombo={$maxCombo} cleared={$cleared}.
+<<jump AfterSong_Choices>>
+===
 
+title: AfterSong_Choices
+---
 -> Back to Start
     <<jump Start>>
 -> End
     <<jump End>>
 ===
-
 title: End
 ---
 Done.
