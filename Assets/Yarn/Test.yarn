@@ -6,28 +6,115 @@ title: Prologue
 <<declare $maxCombo  = 0 as number>>
 <<declare $songId    = "" as string>>
 
-Hello! Choose an action.
+<<bg "alley" 0.4>>
+<<show "AOBA" "normal" "Left" 0.35 false>>
 
+AOBA: Hey! This is a quick stage test.
+
+Choose what to try:
+
+-> Move test
+    <<jump MoveTest>>
+-> Expression test
+    <<jump ExprTest>>
+-> Background test
+    <<jump BgTest>>
+-> Hide / Show test
+    <<jump HideTest>>
 -> Play the tutorial song
-    <<go_to_rhythm "tutorial" "AfterSong">>
+    <<jump RhythmTest>>
 -> End
     <<jump End>>
 ===
 
+title: MoveTest
+---
+AOBA: I’ll slide across the stage now.
+<<move "AOBA" "Center" 0.35>>
+AOBA: Center.
+<<move "AOBA" "Right" 0.35>>
+AOBA: Right.
+<<move "AOBA" "MidLeft" 0.35>>
+AOBA: Mid-Left.
+<<move "AOBA" "Left" 0.35>>
+AOBA: Back to Left.
+
+-> Back to menu
+    <<jump Prologue>>
+===
+
+title: ExprTest
+---
+AOBA: Switching expressions…
+<<expr "AOBA" "smile" 0.2>>
+AOBA: Smile.
+<<expr "AOBA" "worry" 0.2>>
+AOBA: Worry.
+<<expr "AOBA" "normal" 0.2>>
+AOBA: Normal.
+AOBA: I can flip, too.
+<<flip "AOBA" true>>
+AOBA: Now facing right.
+<<flip "AOBA" false>>
+AOBA: And back again.
+
+-> Back to menu
+    <<jump Prologue>>
+===
+
+title: BgTest
+---
+AOBA: Let’s change backgrounds.
+<<bg "citynight" 0.5>>
+AOBA: City night.
+<<bg "alley" 0.5>>
+AOBA: Back to alley.
+
+-> Back to menu
+    <<jump Prologue>>
+===
+
+title: HideTest
+---
+AOBA: Hiding now…
+<<hide "AOBA" 0.25>>
+(narrator): Character hidden.
+<<show "AOBA" "normal" "Left" 0.35 false>>
+AOBA: …and shown again.
+
+-> Back to menu
+    <<jump Prologue>>
+===
+
+title: RhythmTest
+---
+AOBA: Launching the rhythm tutorial. We’ll return here after.
+<<go_to_rhythm "tutorial" "AfterSong">>
+===
+
 title: AfterSong
 ---
-Back from rhythm. song={$songId} grade={$lastGrade} score={$lastScore} maxCombo={$maxCombo} cleared={$cleared}.
+<<bg "alley" 0.4>>
+<<show "AOBA" "normal" "Left" 0.35 false>>
+AOBA: Back from rhythm!
+AOBA: song={$songId}  grade={$lastGrade}  score={$lastScore}  maxCombo={$maxCombo}  cleared={$cleared}.
+
 <<jump AfterSong_Choices>>
 ===
 
 title: AfterSong_Choices
 ---
--> Back to Start
-    <<jump Start>>
+-> Back to menu
+    <<jump Prologue>>
+-> Play again
+    <<jump RhythmTest>>
 -> End
     <<jump End>>
 ===
+
 title: End
 ---
-Done.
+<<hide "AOBA" 0.25>>
+(narrator): Done.
+<<vn_end>>
 ===

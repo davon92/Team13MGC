@@ -143,14 +143,13 @@ public class SaveSlotsScreen : MonoBehaviour, IUIScreen
         }
         else // Save
         {
-            if (slot == SaveSystem.AutoSlot) return; // don’t overwrite Auto from menu
-            // Save quick state (you’ll replace this with real VN snapshot later)
-            var existing = SaveSystem.LoadFromSlot(slot);
-            var note = (existing == null) ? "Manual Save" : "Overwrite Save";
+            if (slot == SaveSystem.AutoSlot) return;
+            var runner = FindObjectOfType<Yarn.Unity.DialogueRunner>(true);
             var pd = new SaveSystem.ProfileData
             {
-                chapterId = existing?.chapterId ?? "Prologue",
-                note = note
+                chapterId = VNSaveManager.LastNode,
+                note = "Manual Save",
+                yarnVariablesJson = runner ? VNSaveManager.CaptureJson(runner) : null,
             };
             SaveSystem.SaveToSlot(slot, pd);
             RefreshAll(pd.chapterId);

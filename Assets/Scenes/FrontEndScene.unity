@@ -1699,10 +1699,6 @@ PrefabInstance:
       propertyPath: screens
       value: 
       objectReference: {fileID: 578269466}
-    - target: {fileID: 9070265206419601787, guid: 1ab19ff1d2b591747a7442e27da4251a, type: 3}
-      propertyPath: m_AnchoredPosition.x
-      value: -0.00012207031
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

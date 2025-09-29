@@ -20,11 +20,7 @@ public static class SaveSystem
         public string chapterId;         // where to resume VN (node name, checkpoint id, etc.)
         public string note;              // e.g. "Auto Save", "Manual Save"
         public long   savedAtUtcTicks;   // when the save was made
-
-        // OPTIONAL: add what you need to resume *exactly* (save-state style).
-        // e.g. Yarn vars snapshot JSON, node position, choice stack…
-        // public string yarnVariablesJson;
-        // public string yarnCheckpointId;
+        public string yarnVariablesJson;
     }
 
     static string Root => Path.Combine(Application.persistentDataPath, "Saves");
