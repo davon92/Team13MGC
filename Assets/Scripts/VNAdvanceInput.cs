@@ -8,7 +8,8 @@ public class VNAdvanceInput : MonoBehaviour
 {
     [Header("Wiring")]
     [SerializeField] DialogueRunner runner;               // Dialogue System's DialogueRunner
-
+    [SerializeField] ScreenController screens;   // NEW
+    
     [Header("Input")]
     [SerializeField] InputActionReference advanceAction;  // e.g. Controls/Submit, Gamepad A, Mouse Left
     [SerializeField] bool enableOnStart = true;
@@ -16,6 +17,7 @@ public class VNAdvanceInput : MonoBehaviour
     void Awake()
     {
         if (!runner) runner = FindFirstObjectByType<DialogueRunner>();
+        if (!screens) screens = FindFirstObjectByType<ScreenController>(FindObjectsInactive.Include); // NEW
         if (!runner) Debug.LogError("[VNAdvanceInput] No DialogueRunner found.");
         if (!advanceAction) Debug.LogWarning("[VNAdvanceInput] No InputActionReference assigned.");
     }
@@ -36,7 +38,12 @@ public class VNAdvanceInput : MonoBehaviour
     {
         // Only advance when a conversation is running
         if (runner == null || runner.IsDialogueRunning == false) return;
+        // NEW: Do not advance while UI overlays are on top
+        if (screens && (screens.IsOnTop(MenuIds.VnPause) || screens.IsOnTop(MenuIds.SaveLoad)))
+            return;
 
+        // Also drop one advance right after closing Pause
+        if (VNInputBlocker.ShouldBlock) return;  // :contentReference[oaicite:1]{index=1}
         // In Yarn 3.x this requests the next piece of content.
         // If options are currently on screen, this is ignored (safe).
         runner.RequestNextLine();

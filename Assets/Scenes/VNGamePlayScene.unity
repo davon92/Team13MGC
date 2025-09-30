@@ -412,7 +412,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8020628925107869960, guid: 52571f68872914e24837210513edea1d, type: 3}
   m_PrefabInstance: {fileID: 1769611883}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 2007218520}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: a0cd0d0412ea34813959f8ddaf02a6eb, type: 3}
@@ -1530,6 +1530,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 7262066351540048079, guid: 52571f68872914e24837210513edea1d, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1769611896}
+    - targetCorrespondingSourceObject: {fileID: 8020628925107869965, guid: 52571f68872914e24837210513edea1d, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2007218524}
   m_SourcePrefab: {fileID: 100100000, guid: 52571f68872914e24837210513edea1d, type: 3}
 --- !u!1 &1769611884 stripped
 GameObject:
@@ -1604,6 +1607,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   runner: {fileID: 1769611885}
+  screens: {fileID: 48875979}
   advanceAction: {fileID: 9080476448165081331, guid: 62d46b7c0995c7a469b21425c98311b0, type: 3}
   enableOnStart: 1
 --- !u!1 &1830781543 stripped
@@ -1702,6 +1706,30 @@ RectTransform:
   m_AnchoredPosition: {x: -570, y: -549}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &2007218520 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8020628925107869965, guid: 52571f68872914e24837210513edea1d, type: 3}
+  m_PrefabInstance: {fileID: 1769611883}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &2007218521 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8020628925107869966, guid: 52571f68872914e24837210513edea1d, type: 3}
+  m_PrefabInstance: {fileID: 1769611883}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2007218524
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2007218520}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 77cac2ff98415a049aec7ba8aca28e4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  optionsRoot: {fileID: 2007218521}
+  optionsGroup: {fileID: 235558551}
 --- !u!1 &2115567710
 GameObject:
   m_ObjectHideFlags: 0

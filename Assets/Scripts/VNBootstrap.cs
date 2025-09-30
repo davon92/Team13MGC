@@ -22,7 +22,7 @@ public class VNBootstrap : MonoBehaviour
 
     [Header("Initial Visual State (optional)")]
     [SerializeField] CanvasGroup linePresenterGroup;    // Line Presenter canvas group
-    [SerializeField] CanvasGroup optionsPresenterGroup; // Options Presenter canvas group
+    public CanvasGroup optionsPresenterGroup; // Options Presenter canvas group
 
     void Awake()
     {
