@@ -308,25 +308,27 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
             .OnUpdate(UpdateFocusDynamic)
             .OnComplete(() =>
             {
-                // lock the root back to the canonical position,
-                // rotate the visual ring and rebind data
+                // lock back to the canonical position
                 listRoot.anchoredPosition = from;
-                RotateTilesAndRebind(dir);
 
-                // logical selection moved
+                // 1) advance selection
                 currentSong = WrapIndex(currentSong + dir, VisibleCount);
-                UpdateLeftPanel();
 
-                // snap one tile focused
+                // 2) rotate visuals to match the new logical center
+                RotateTiles(dir);
+
+                // 3) bind tiles around the new center
+                RebindAll();
+
+                // 4) refresh look & focus
+                UpdateLeftPanel();
                 ApplyFocusTween();
                 FocusCenterTile();
 
                 busy = false;
 
-                // schedule preview for the newly selected tile (debounced)
+                // 5) schedule preview, drain held repeats
                 SchedulePreview(Current);
-
-                // drain queued steps for held input
                 if (queuedSteps > 0 && repeatDir != 0)
                 {
                     queuedSteps--;
@@ -390,9 +392,10 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
         return best ?? tiles[centerIdx];
     }
 
-    void RotateTilesAndRebind(int dir)
+    // Rename & trim: only rotate transforms, no RebindAll() in here.
+    void RotateTiles(int dir)
     {
-        if (dir > 0) // moved down: list visually went up, bring top tile to bottom
+        if (dir > 0) // moved down: list went up, bring top tile to bottom
         {
             var first = tiles[0];
             tiles.RemoveAt(0);
@@ -411,8 +414,6 @@ public class SongSelectScreen : MonoBehaviour, IUIScreen
             var rt = (RectTransform)tiles[i].transform;
             rt.anchoredPosition = new Vector2(0f, -i * RowStep);
         }
-
-        RebindAll();
     }
 
     void FocusCenterTile()
