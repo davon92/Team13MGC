@@ -48,9 +48,10 @@ public class RhythmEntryPoint : MonoBehaviour
 
         if (chartLoader && song.koreography)
         {
-            chartLoader.SendMessage("SetKoreography", song.koreography, SendMessageOptions.DontRequireReceiver);
-            chartLoader.SendMessage("SetButtonsEventID", song.buttonsEventID, SendMessageOptions.DontRequireReceiver);
-            chartLoader.SendMessage("SetKnobEventID",    song.knobEventID,    SendMessageOptions.DontRequireReceiver);
+            // direct, typesafe handoff (no SendMessage)
+            chartLoader.SetKoreography(song.koreography);
+            chartLoader.SetButtonsEventID(song.buttonsEventID);
+            chartLoader.SetKnobEventID(song.knobEventID);
         }
 
         if (conductor) conductor.SetBpm(Mathf.RoundToInt(song.bpm));

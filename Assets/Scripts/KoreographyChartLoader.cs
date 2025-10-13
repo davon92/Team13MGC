@@ -12,10 +12,10 @@ public class KoreographyChartLoader : MonoBehaviour
     [SerializeField] KnobPathRenderer knobPath;
 
     [Tooltip("Event ID for the face-button track (Int payload: 0=A,1=Y,2=B,3=X).")]
-    [SerializeField] string buttonsEventID = "Buttons";
+    [SerializeField] string buttonsEventID = "BTN";
 
     [Tooltip("Event ID for the knob track (Curve payload on Span, 0..1).")]
-    [SerializeField] string knobEventID = "Knob";
+    [SerializeField] string knobEventID = "KNOB";
 
     [Header("Targets")]
     [SerializeField] ButtonLaneController buttonLane;
@@ -25,20 +25,35 @@ public class KoreographyChartLoader : MonoBehaviour
     [Header("Optional")]
     [Tooltip("If true, log what was parsed so you can verify the chart in the Console.")]
     [SerializeField] bool verbose = false;
+    
+    public void SetKoreography(SonicBloom.Koreo.Koreography k) { koreography = k; _dirty = true; }
+    public void SetButtonsEventID(string id) { buttonsEventID = id; _dirty = true; }
+    public void SetKnobEventID(string id)    { knobEventID    = id; _dirty = true; }
+    public void SetKnobPath(KnobPathRenderer path) { knobPath = path; _dirty = true; }
+    
+    bool _loaded, _dirty;
+    void OnEnable() { _loaded = false; }
+    
+    void Start() { TryLoad(); }
+    void Update() { if (!_loaded && _dirty) TryLoad(); }
 
-    void Start()
+    void TryLoad()
     {
-        if (!koreography) { Debug.LogError("[ChartLoader] No Koreography."); return; }
+        if (_loaded) return;
+        if (!koreography) return;   // not set yet by RhythmEntryPoint
 
         var buttons = ParseButtons();
         if (buttonLane) buttonLane.LoadChart(buttons);
 
         var knobSpans = ParseKnob();
         if (knobLane) knobLane.LoadChart(knobSpans);
-
         if (knobPath) knobPath.SetSpans(knobSpans);
 
-        if (verbose) Debug.Log($"[KoreographyChartLoader] Chart loaded. buttons={buttons.Count}, knobSpans={knobSpans.Count}");
+        _loaded = true;
+        _dirty = false;
+
+        if (verbose) Debug.Log($"[KoreographyChartLoader] Loaded '{koreography.name}' " +
+                               $"buttons={buttons.Count} knobSpans={knobSpans.Count}");
     }
 
     // --- Parse the Buttons track (Int payload 0..3; OneOff=Tap, Span=Hold)
@@ -143,4 +158,5 @@ public class KoreographyChartLoader : MonoBehaviour
 
         return spans.OrderBy(s => s.startSample).ToList();
     }
+
 }
