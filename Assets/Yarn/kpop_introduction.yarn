@@ -1,0 +1,79 @@
+title: KatiePopperFirstContact
+---
+// (parentheses) are thoughts, like in the Ace Attorney series
+<<set $player_name to "Player">>
+KP: Helloooooooooo? Is that a new face?!
+(New ears, maybe...)
+KP: Hi! I saw you join our class earlier but never got a chance to catch you!
+(I was late... maybe for a good reason...)
+KP: I'm Katie, Katie Popper. You?
+{$player_name}.
+KP: {$player_name}, cool! Nice to meet you!
+Yeah, you too.
+(Just go with it.)
+
+KP: So what brings you to Abingdon?
+-> Fame and Fortune.
+    KP: Oh, same!
+    KP: Well, maybe not the fame and fortune, specifically.
+    KP: But the idea of touring the world, with good friends and staff...
+    KP: Touching the public's heart one song at a time...
+    KP: It all sounds like fun!
+    KP: Though I wouldn't quite leave the resulting fame and fortune on the table.
+    KP: So I suppose I personally have bigger reasons than you, but no shame! I can't knock down simple aspirations!
+-> Just wanted to try something new.
+    KP: Ah, nice!
+    KP: It's fun! Especially with others.
+    KP: I joined this school with my friends so we could form our own group!
+    KP: We've been lucky to all get in, although we're in different classes, so it's a bit hard to find time for one another but we'll manage!
+    KP: And of course, you're welcome to join us!
+-> It's what I've always wanted to do. To dance.
+    KP: No way, me too!
+    KP: My mom always said that I could dance before I could walk. Funny, right?
+    
+    KP: Were you the same?
+    -> Yeah!
+        KP: Cool! You must know a lot then!
+    -> Kind of.
+        KP: Ah I see. Perhaps you could dance only after you could walk.
+        KP: We're all walk life at different paces, so no sweat.
+    -> No.
+        KP: Aw, well that's okay. I'm sure you're still alright.
+        (Is she ever negative?)
+-> Go away, please.
+    KP: Ahhh, a little shy?
+    KP: Don't worry, it happens to the best of us!
+    KP: Funny enough, one reason I'm attending here is to get over my stage fright.
+    KP: I can talk all day and all night long with my friends, parents, teachers, and anyone else I've known for at least a little while.
+    (Couple minutes?)
+    KP: But a whole audience? Wooo, it gives me shivers.
+    KP: One time at a talent show in middle school, I was so frozen solid that the teachers had to guide me off the stage.
+    Oh jeez. Must've sucked.
+    KP: Yeah! While I got better, I still need practice, especially with my dancing, and especially dancing in front of a whole audience.
+    KP: So now I'm here!
+-> Go away.
+    KP: Wow, had a long day already, huh?
+    KP: No worries, we can catch up later! I still want to get to know everyone here!
+    KP: Including yourself! Byeeeeeeeeeee!
+    (Thank goodness.)
+    <<stop>>
+
+// prelude to the dance off
+KP: Well, how about you show off your moves?
+
+KP: I can show off mine as well!
+-> Of course!
+    KP: Let's gooooo!
+    // do the dance off
+-> Sure.
+    KP: Alright, let's go!
+    // do the dance off
+-> Not today.
+    KP: Aw, okay. Tomorrow, then! Byeeee!
+    <<stop>>
+-> No.
+    KP: Aw, okay. Maybe tomorrow? Or next week?
+    KP: Sorry I get excited. I'll see you around!
+    (Finally...)
+    <<stop>>
+===

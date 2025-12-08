@@ -74,7 +74,18 @@ public class KoreographyChartLoader : MonoBehaviour
             // Expect Int payload; fallback: A if absent.
             int lane = 0;
             if (evt.HasIntPayload()) lane = Mathf.Clamp(evt.GetIntValue(), 0, 3);
-
+            if (evt.HasTextPayload())
+            {
+                string noteName = evt.GetTextValue();
+                switch (noteName)
+                {
+                    case "C": lane = 0; break; // A
+                    case "D": lane = 1; break; // Y
+                    case "E": lane = 2; break; // B
+                    case "F": lane = 3; break; // X
+                    default: lane = 0; break;
+                }
+            }
             var face = (RhythmTypes.FaceButton)lane;
 
             var n = new RhythmTypes.ButtonNote

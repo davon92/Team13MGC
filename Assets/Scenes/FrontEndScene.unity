@@ -717,6 +717,7 @@ GameObject:
   - component: {fileID: 760220713}
   - component: {fileID: 760220712}
   - component: {fileID: 760220715}
+  - component: {fileID: 760220716}
   m_Layer: 0
   m_Name: Bootstrap
   m_TagString: Untagged
@@ -780,6 +781,19 @@ MonoBehaviour:
   playStation: {fileID: 11400000, guid: b49b92811150fa748934bb32629844e4, type: 2}
   nintendo: {fileID: 11400000, guid: dfef1be2ac83be743b298b65b42b3de0, type: 2}
   keyboardMouse: {fileID: 11400000, guid: a13f32ef44fb8d841ab96204aa0c413b, type: 2}
+--- !u!114 &760220716
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 760220711}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d35f3f474376c534d8637bbe0ab6d2e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  database: {fileID: 11400000, guid: cb0e800dd83cbeb4ba8842e4e52008b4, type: 2}
 --- !u!1001 &813735878
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -790,7 +804,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1519706413265055922, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00012207031
+      value: -0.00024414062
       objectReference: {fileID: 0}
     - target: {fileID: 4386646269183275181, guid: 27a8ecb479d27a94ea1270a0e76b5504, type: 3}
       propertyPath: m_Pivot.x
@@ -1574,7 +1588,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8637482974368956037, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00012207031
+      value: -0.00024414062
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 2472826518798702067, guid: 497cc40eb3dc5a743ad1d247479d32c0, type: 3}
@@ -1807,6 +1821,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7135445368565826933, guid: 617d41076df47cd4cbef127fffe13747, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: -0.00024414062
+      objectReference: {fileID: 0}
     - target: {fileID: 8249934659701150081, guid: 617d41076df47cd4cbef127fffe13747, type: 3}
       propertyPath: m_Name
       value: Screen_FreePlay
@@ -1918,7 +1936,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9192862231941472326, guid: 8834bcc53a30bfa4d9403db9ef14939f, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00012207031
+      value: -0.00024414062
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 4017934972364718341, guid: 8834bcc53a30bfa4d9403db9ef14939f, type: 3}
@@ -2042,7 +2060,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5093984094962966256, guid: 79fca63fa963955449c4ee204456d2a7, type: 3}
       propertyPath: m_AnchoredPosition.x
-      value: -0.00012207031
+      value: -0.00024414062
       objectReference: {fileID: 0}
     - target: {fileID: 7901853559971678647, guid: 79fca63fa963955449c4ee204456d2a7, type: 3}
       propertyPath: m_Name

@@ -1,0 +1,83 @@
+title: DianaSwaninskyFirstContact
+---
+// (parentheses) are thoughts, like in the Ace Attorney series
+<<set $player_name to "Player">>
+
+DS: Why, hello there. I see you're new here as well.
+Glad I'm not alone.
+DS: Yes, likewise. I'm Ms. Diana Swaninsky.
+DS: I've recently transferred from a community college over in New York. General Ed and all.
+Nice, I'm {$player_name}. I've recently transferred from a high school, albeit not in New York.
+DS: Haha, I see. Pleasure meeting you.
+You too.
+
+DS: What brings you here?
+-> Fame and Fortune.
+    DS: ...you sure? I can't quite believe that, given your demeanor.
+    DS: I suppose you cannot judge a book by its cover.
+    It's a long story.
+    (that I'd make up.)
+    DS: Well, if you're lost, the last I can say is that it isn't all rainbows and sunshine.
+    Alright, noted. (...what?)
+-> Just wanted to try something new.
+    DS: Ha, must've tried it ages ago, least to get accepted here.
+    DS: Then again, I did meet a certain Katie Popper earlier, or rather she met me.
+    DS: So perhaps it isn't as hard to get in as they say.
+    (...should I be hurt or...?)
+-> It's what I've always wanted to do. To dance.
+    DS: How nice, a classic! I'm of the same reason.
+    DS: My dad used to play CDs out in the living room, when I was young.
+    DS: I never cared much until he put on some Tchaikovsky ballet suites. I immediately became entralled in his graceful yet poignant melodies.
+    DS: To further satiate my desires, he took me to see The Nutcracker.
+    DS: The rest, shall we say, is history?
+    Well, if you've always wanted to dance, why go to a community college first?
+    DS: Ah, yes. While supportive, my parents never saw my dancing career as practical beyond high school. And for a while, I agreed.
+    DS: However, the dreadful thought of a life potentially wasted came and lingered upon me.
+    
+    DS: And, given my vast experience beforehand, I figured that I had a chance.
+    -> I agree!
+        DS: Glad you see it as well, haha.
+    -> You might be wasting your time.
+        DS: Maybe, maybe not.
+        DS: Along with a chance, I also figured that I had time, haha.
+    -> You're wasting your time.
+        DS: Oh? I suppose we'll see. Well, goodbye then.
+        <<stop>>
+-> Go away, please.
+    DS: Hm, alright then, if you request.
+    DS: But I'm sure we'll cross paths again.
+    DS: Goodbye!
+    <<stop>>
+-> Go away.
+    DS: Hm, not your day?
+    DS: Alright then, if you insist.
+    <<stop>>
+
+// Prelude to the dance off
+DS: Well, you seem capable of handling yourself around here.
+
+DS: Care to show off a bit of your repertoire?
+-> Of course!
+    DS: Well well, this should be good.
+    // do the dance off
+-> Sure.
+    DS: Alright, let's see it.
+    // do the dance off
+-> Not today.
+    DS: Ah, shame. No worries then.
+    DS: I'll be waiting. Goodbye.
+    <<stop>>
+-> No.
+    DS: Hm, perhaps I was wrong about you.
+    DS: Ah well, I won't push it then. Bye.
+    <<stop>>
+
+// after a good dance off
+DS: Wow, impressive, perhaps even to me.
+DS: Especially your attitude.
+Thanks!
+(What attitude? I was straight-faced the whole time.)
+DS: Let's talk more sometime, perhaps at lunch. I'll see you then, {$player_name}.
+Bye!
+
+===

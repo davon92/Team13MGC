@@ -16,4 +16,6 @@ public class GalleryItem : ScriptableObject
 
     [Header("Behavior")]
     public bool hideIfLocked = false;   // otherwise show as locked tile
+    [Tooltip("If true, this item is unlocked on first run (before any saves exist).")]
+    public bool unlockedByDefault = false;     // <-- ADD THIS
 }

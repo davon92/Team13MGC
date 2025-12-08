@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 public static class RhythmTypes
 {
-    public enum FaceButton { A = 0, Y = 1, B = 2, X = 3 }
+    public enum FaceButton { A = 0, B = 1, X = 2, Y = 3 }
 
     [Serializable]
     public struct ButtonNote
